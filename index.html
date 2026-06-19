@@ -1,0 +1,81 @@
+<!doctype html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Periodic Table</title>
+  <meta name="description" content="Periodic Table — repository webpage">
+  <style>
+    :root{--card-bg:#fff;--muted:#666;--accent:#0366d6}
+    body{font-family:system-ui,Segoe UI,Arial,Helvetica,sans-serif;max-width:1100px;margin:2rem auto;padding:1rem;background:#f6f8fa}
+    header{display:flex;align-items:center;gap:1rem}
+    h1{margin:0}
+    a{color:var(--accent)}
+    .lead{color:var(--muted);margin-top:.5rem}
+
+    /* Periodic table grid */
+    .ptable{display:grid;grid-template-columns:repeat(18,1fr);gap:6px;margin-top:1.25rem}
+    .element{background:var(--card-bg);border-radius:6px;padding:.5rem;box-shadow:0 1px 0 rgba(0,0,0,0.05);text-align:left;font-size:13px}
+    .el-num{font-size:11px;color:var(--muted)}
+    .el-symbol{font-weight:700;font-size:18px}
+    .el-name{font-size:11px;color:var(--muted)}
+
+    /* small helpers for positioning (grid-row and grid-column set inline) */
+    .empty{visibility:hidden}
+
+    footer{margin-top:2rem;font-size:.9rem;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Periodic Table</h1>
+    <nav style="margin-left:auto"><a href="README.md">README</a></nav>
+  </header>
+  <p class="lead">A simple interactive-friendly periodic table grid. Click any element to copy its symbol.</p>
+
+  <div class="ptable" id="ptable">
+    <!-- Row 1 -->
+    <div class="element" style="grid-column:1;grid-row:1" data-symbol="H"><div class="el-num">1</div><div class="el-symbol">H</div><div class="el-name">Hydrogen</div></div>
+    <div class="element" style="grid-column:18;grid-row:1" data-symbol="He"><div class="el-num">2</div><div class="el-symbol">He</div><div class="el-name">Helium</div></div>
+
+    <!-- Row 2 -->
+    <div class="element" style="grid-column:1;grid-row:2" data-symbol="Li"><div class="el-num">3</div><div class="el-symbol">Li</div><div class="el-name">Lithium</div></div>
+    <div class="element" style="grid-column:2;grid-row:2" data-symbol="Be"><div class="el-num">4</div><div class="el-symbol">Be</div><div class="el-name">Beryllium</div></div>
+    <div class="element" style="grid-column:13;grid-row:2" data-symbol="B"><div class="el-num">5</div><div class="el-symbol">B</div><div class="el-name">Boron</div></div>
+    <div class="element" style="grid-column:14;grid-row:2" data-symbol="C"><div class="el-num">6</div><div class="el-symbol">C</div><div class="el-name">Carbon</div></div>
+    <div class="element" style="grid-column:15;grid-row:2" data-symbol="N"><div class="el-num">7</div><div class="el-symbol">N</div><div class="el-name">Nitrogen</div></div>
+    <div class="element" style="grid-column:16;grid-row:2" data-symbol="O"><div class="el-num">8</div><div class="el-symbol">O</div><div class="el-name">Oxygen</div></div>
+    <div class="element" style="grid-column:17;grid-row:2" data-symbol="F"><div class="el-num">9</div><div class="el-symbol">F</div><div class="el-name">Fluorine</div></div>
+    <div class="element" style="grid-column:18;grid-row:2" data-symbol="Ne"><div class="el-num">10</div><div class="el-symbol">Ne</div><div class="el-name">Neon</div></div>
+
+    <!-- Row 3 -->
+    <div class="element" style="grid-column:1;grid-row:3" data-symbol="Na"><div class="el-num">11</div><div class="el-symbol">Na</div><div class="el-name">Sodium</div></div>
+    <div class="element" style="grid-column:2;grid-row:3" data-symbol="Mg"><div class="el-num">12</div><div class="el-symbol">Mg</div><div class="el-name">Magnesium</div></div>
+    <div class="element" style="grid-column:13;grid-row:3" data-symbol="Al"><div class="el-num">13</div><div class="el-symbol">Al</div><div class="el-name">Aluminium</div></div>
+    <div class="element" style="grid-column:14;grid-row:3" data-symbol="Si"><div class="el-num">14</div><div class="el-symbol">Si</div><div class="el-name">Silicon</div></div>
+    <div class="element" style="grid-column:15;grid-row:3" data-symbol="P"><div class="el-num">15</div><div class="el-symbol">P</div><div class="el-name">Phosphorus</div></div>
+    <div class="element" style="grid-column:16;grid-row:3" data-symbol="S"><div class="el-num">16</div><div class="el-symbol">S</div><div class="el-name">Sulfur</div></div>
+    <div class="element" style="grid-column:17;grid-row:3" data-symbol="Cl"><div class="el-num">17</div><div class="el-symbol">Cl</div><div class="el-name">Chlorine</div></div>
+    <div class="element" style="grid-column:18;grid-row:3" data-symbol="Ar"><div class="el-num">18</div><div class="el-symbol">Ar</div><div class="el-name">Argon</div></div>
+
+    <!-- For brevity other elements are omitted; the grid supports placements by grid-column/grid-row -->
+  </div>
+
+  <footer>Repository: <a href="https://github.com/cgphung-glitch/periodic-table">cgphung-glitch/periodic-table</a></footer>
+
+  <script>
+    // Click-to-copy symbol
+    document.getElementById('ptable').addEventListener('click', e=>{
+      const el = e.target.closest('.element');
+      if(!el) return;
+      const sym = el.dataset.symbol;
+      if(!sym) return;
+      navigator.clipboard?.writeText(sym).then(()=>{
+        el.style.boxShadow='0 0 0 3px rgba(3,102,214,0.12)';
+        setTimeout(()=>el.style.boxShadow='0 1px 0 rgba(0,0,0,0.05)',300);
+      }).catch(()=>{});
+    });
+  </script>
+</body>
+</html>
