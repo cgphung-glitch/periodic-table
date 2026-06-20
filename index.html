@@ -300,6 +300,20 @@
       text-align: left;
     }
 
+.element.game-target {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary) 80%, black 10%);
+}
+
+.element.game-correct {
+  outline: 3px solid #2e7d32;
+  outline-offset: 2px;
+}
+
+.element.game-wrong {
+  outline: 3px solid #c62828;
+  outline-offset: 2px;
+}
+
     /* Presentation mode */
     .app.presentation-mode {
       font-size: 1.05rem;
@@ -429,6 +443,46 @@
       <h2 id="legend-heading" style="font-size: var(--text-lg); margin-bottom: var(--space-4);">Color legend</h2>
       <div class="legend" id="legend"></div>
     </section>
+
+<section class="panel" aria-labelledby="game-heading" id="gamePanel">
+  <h2 id="game-heading" style="font-size: var(--text-lg); margin-bottom: 0.5rem;">
+    Element click game
+  </h2>
+  <p style="margin-bottom: 0.75rem; font-size: var(--text-sm); color: var(--color-text-muted);">
+    Click the correct element tile for the given name. First click: 5 pts; second: 3 pts; third: 1 pt. After 3 clicks, a new element is chosen.
+    Ten correct first-click answers in a row earn a 100-point bonus.
+  </p>
+  <div style="display:flex; flex-wrap:wrap; gap:0.75rem; align-items:center; margin-bottom:0.75rem;">
+    <div>
+      <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Find this element</div>
+      <div id="gameTargetName" style="font-size:1.25rem; font-weight:600;">—</div>
+    </div>
+    <div>
+      <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Score</div>
+      <div id="gameScore" style="font-size:1.1rem; font-weight:600;">0</div>
+    </div>
+    <div>
+      <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Attempts (this round)</div>
+      <div id="gameAttempts" style="font-size:1.1rem; font-weight:600;">0 / 3</div>
+    </div>
+    <div>
+      <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">First-click streak</div>
+      <div id="gameStreak" style="font-size:1.1rem; font-weight:600;">0</div>
+    </div>
+  </div>
+  <div id="gameMessage" style="font-size:0.9rem; min-height:1.2em;"></div>
+  <div style="margin-top:0.75rem; display:flex; flex-wrap:wrap; gap:0.5rem;">
+    <button type="button" class="btn" id="gameStartBtn">
+      Start / New game
+    </button>
+    <button type="button" class="btn" id="gameSkipBtn">
+      Skip element
+    </button>
+    <button type="button" class="btn" id="gameResetScoreBtn">
+      Reset score
+    </button>
+  </div>
+</section>
 
     <main id="main" class="panel">
       <div class="table-wrap">
@@ -629,6 +683,22 @@
     const appRoot = document.querySelector('.app');
     const presentationToggle = document.getElementById('presentationToggle');
 
+    const gameTargetNameEl = document.getElementById('gameTargetName');
+    const gameScoreEl = document.getElementById('gameScore');
+    const gameAttemptsEl = document.getElementById('gameAttempts');
+    const gameStreakEl = document.getElementById('gameStreak');
+    const gameMessageEl = document.getElementById('gameMessage');
+    const gameStartBtn = document.getElementById('gameStartBtn');
+    const gameSkipBtn = document.getElementById('gameSkipBtn');
+    const gameResetScoreBtn = document.getElementById('gameResetScoreBtn');
+
+    let gameActive = false;
+    let gameTargetElement = null;          // the element object from `elements`
+    let gameScore = 0;
+    let gameAttemptsThisRound = 0;         // 0–3
+    let gameFirstClickStreak = 0;          // consecutive first-click correct
+    let gameLastClickWasFirstCorrect = false;
+
     const NOTES_STORAGE_KEY = 'pt-notes-v1';
     let previousThemeForPresentation = null;
 
@@ -799,24 +869,10 @@
 
     function iupacToUS(groupNumber) {
       const table = {
-        1: 'IA',
-        2: 'IIA',
-        3: 'IIIB',
-        4: 'IVB',
-        5: 'VB',
-        6: 'VIB',
-        7: 'VIIB',
-        8: 'VIIIB',
-        9: 'VIIIB',
-        10: 'VIIIB',
-        11: 'IB',
-        12: 'IIB',
-        13: 'IIIA',
-        14: 'IVA',
-        15: 'VA',
-        16: 'VIA',
-        17: 'VIIA',
-        18: 'VIIIA'
+        1: 'IA', 2: 'IIA', 3: 'IIIB', 4: 'IVB', 5: 'VB',
+        6: 'VIB', 7: 'VIIB', 8: 'VIIIB', 9: 'VIIIB', 10: 'VIIIB',
+        11: 'IB', 12: 'IIB', 13: 'IIIA', 14: 'IVA', 15: 'VA',
+        16: 'VIA', 17: 'VIIA', 18: 'VIIIA'
       };
       return table[groupNumber] || '';
     }
@@ -828,6 +884,13 @@
       if (mode === 'iupac') return `Group ${groupNumber}`;
       if (mode === 'us') return `Group ${us}`;
       return `Group ${groupNumber} (${us})`;
+    }
+
+    function parseOxidationStates(raw) {
+      if (!raw) return [];
+      if (Array.isArray(raw)) return raw;
+      if (typeof raw !== 'string') return [];
+      return raw.split(',').map(s => s.trim()).filter(Boolean);
     }
 
     function exportNotesToFile() {
@@ -864,224 +927,326 @@
       reader.readAsText(file);
     }
 
+    // ── Game helpers ────────────────────────────────────────────────────────────
+
+    function clearGameTileStyles() {
+      grid.querySelectorAll('.element:not(.placeholder)').forEach(tile => {
+        tile.classList.remove('game-target', 'game-correct', 'game-wrong');
+      });
+    }
+
+    function updateGameHUD(message) {
+      if (gameTargetNameEl)
+        gameTargetNameEl.textContent = gameActive && gameTargetElement
+          ? gameTargetElement.name : '—';
+      if (gameScoreEl)    gameScoreEl.textContent    = String(gameScore);
+      if (gameAttemptsEl) gameAttemptsEl.textContent = `${gameAttemptsThisRound} / 3`;
+      if (gameStreakEl)   gameStreakEl.textContent    = String(gameFirstClickStreak);
+      if (gameMessageEl)  gameMessageEl.textContent  = message != null ? message : '';
+    }
+
+    function pickRandomElement() {
+      const pool = elements.filter(e => e && typeof e.name === 'string');
+      if (!pool.length) return null;
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+
+    function startNewRound(message) {
+      gameTargetElement    = pickRandomElement();
+      gameAttemptsThisRound = 0;
+      clearGameTileStyles();
+      updateGameHUD(message != null ? message : '');
+    }
+
+    function resetGameState() {
+      gameActive            = false;
+      gameScore             = 0;
+      gameAttemptsThisRound = 0;
+      gameFirstClickStreak  = 0;
+      gameTargetElement     = null;
+      clearGameTileStyles();
+      updateGameHUD('Press "Start / New game" to begin.');
+    }
+
+    function handleGameClick(tile) {
+      if (!gameActive || !gameTargetElement) return;
+
+      const clickedNumber = parseInt(tile.dataset.number, 10);
+      const isCorrect     = clickedNumber === gameTargetElement.n;
+
+      // Increment attempts, cap at 3
+      if (gameAttemptsThisRound < 3) gameAttemptsThisRound += 1;
+
+      clearGameTileStyles();
+
+      if (isCorrect) {
+        tile.classList.add('game-correct');
+
+        let points = 0;
+        if (gameAttemptsThisRound === 1) {
+          points = 5;
+          gameFirstClickStreak += 1;
+        } else if (gameAttemptsThisRound === 2) {
+          points = 3;
+          gameFirstClickStreak = 0;
+        } else {
+          points = 1;
+          gameFirstClickStreak = 0;
+        }
+        gameScore += points;
+
+        let message;
+        // Award bonus only at exact multiples of 10 consecutive first-click answers
+        if (gameAttemptsThisRound === 1
+            && gameFirstClickStreak > 0
+            && gameFirstClickStreak % 10 === 0) {
+          gameScore += 100;
+          message = `Correct on first click! +${points} pts ` +
+                    `+100 bonus for ${gameFirstClickStreak} first-click answers in a row!`;
+        } else {
+          message = `Correct! +${points} pts.` +
+                    (gameFirstClickStreak > 1
+                      ? `  First-click streak: ${gameFirstClickStreak}`
+                      : '');
+        }
+
+        startNewRound(message);
+
+      } else {
+        // Wrong answer
+        tile.classList.add('game-wrong');
+        gameFirstClickStreak = 0;
+
+        if (gameAttemptsThisRound >= 3) {
+          // Reveal correct tile briefly, then move on
+          const correctTile = grid.querySelector(
+            `.element[data-number="${gameTargetElement.n}"]`
+          );
+          if (correctTile) correctTile.classList.add('game-target');
+
+          const revealMsg =
+            `Incorrect. The correct answer was ${gameTargetElement.name}. Moving on…`;
+          updateGameHUD(revealMsg);
+
+          setTimeout(() => startNewRound(revealMsg), 1400);
+        } else {
+          updateGameHUD(
+            `Incorrect. Try again (attempt ${gameAttemptsThisRound} of 3).`
+          );
+        }
+      }
+    }
+
+    // ── Element info panel ──────────────────────────────────────────────────────
+
     function showElementInfo(tile) {
-      const number = parseInt(tile.dataset.number, 10);
-      const name = tile.dataset.name;
+      const number    = parseInt(tile.dataset.number, 10);
+      const name      = tile.dataset.name || '';
       const rawSymbol = tile.dataset.symbol || '';
-      const symbol = rawSymbol.charAt(0).toUpperCase() + rawSymbol.slice(1).toLowerCase();
-      const mass = tile.querySelector('.mass')?.textContent || '';
-      const elData = elements.find(e => e.n === number) || {};
-      const lookup = elData.lookup || {};
+      const symbol    = rawSymbol.charAt(0).toUpperCase() + rawSymbol.slice(1).toLowerCase();
+      const mass      = tile.querySelector('.mass')?.textContent || '';
+      const elData    = elements.find(e => e.n === number) || {};
+      const lookup    = elData.lookup || {};
 
       const groupNumber = getGroupNumberFromAtomicNumber(number);
-      const period = elData ? getPeriodFromPosition(elData.x, elData.y) : lookup.period || null;
-      const groupLabel = formatGroupLabel(groupNumber);
+      const period      = getPeriodFromPosition(elData.x, elData.y) || lookup.period || null;
+      const groupLabel  = formatGroupLabel(groupNumber);
 
-      const fp = elData.freezing_point_K ?? lookup.melt ?? null;
-      const bp = elData.boiling_point_K ?? lookup.boil ?? null;
+      const fp = elData.freezing_point_K ?? lookup.melt   ?? null;
+      const bp = elData.boiling_point_K  ?? lookup.boil   ?? null;
 
-      const density_cm3 = elData.density_g_per_cm3 ??
-        (lookup.phase && lookup.phase.toLowerCase() !== 'gas' ? lookup.density : null);
-      const density_L = elData.density_g_per_L ??
-        (lookup.phase && lookup.phase.toLowerCase() === 'gas' ? lookup.density : null);
+      const isGas      = lookup.phase && lookup.phase.toLowerCase() === 'gas';
+      const density_cm3 = elData.density_g_per_cm3 ?? (!isGas ? lookup.density : null);
+      const density_L   = elData.density_g_per_L   ?? ( isGas ? lookup.density : null);
 
       const ie1 = elData.first_ionization_energy ??
-        (lookup.ionization_energies ? lookup.ionization_energies[0] : null);
-      const ea = elData.electron_affinity ?? lookup.electron_affinity ?? null;
-      const ox = elData.oxidation_states || lookup.oxidation_states || [];
-      const phase = elData.phase_25C || (lookup.phase ? lookup.phase.toLowerCase() : 'unknown');
+        (Array.isArray(lookup.ionization_energies) ? lookup.ionization_energies[0] : null);
+      const ea  = elData.electron_affinity ?? lookup.electron_affinity ?? null;
 
-      const appearance = lookup.appearance || '';
-      const category = lookup.category || '';
+      const rawOx = elData.oxidation_states || lookup.oxidation_states || null;
+      const oxArr = parseOxidationStates(rawOx);
+      const oxStr = oxArr.length ? oxArr.join(', ') : '—';
+
+      const phase          = elData.phase_25C ||
+                             (lookup.phase ? lookup.phase.toLowerCase() : 'unknown');
+      const appearance     = lookup.appearance              || '';
+      const category       = lookup.category               || '';
       const electronegativity = lookup.electronegativity_pauling ?? null;
-      const molarHeat = lookup.molar_heat ?? null;
-      const shells = lookup.shells || [];
-      const discoveredBy = lookup.discovered_by || '';
-      const namedBy = lookup.named_by || '';
-      const summary = lookup.summary || '';
-      const summaryText = summary || '—';
+      const molarHeat      = lookup.molar_heat              ?? null;
+      const shells         = lookup.shells                  || [];
+      const discoveredBy   = lookup.discovered_by           || '';
+      const namedBy        = lookup.named_by                || '';
+      const summaryText    = lookup.summary                 || '—';
 
       function fmt(val, digits = 2) {
-        if (val == null || Number.isNaN(val)) return '—';
+        if (val == null || Number.isNaN(Number(val))) return '—';
         return Number(val).toFixed(digits);
       }
 
-      const fpStr = fp != null ? `${fmt(fp, 2)} K` : '—';
-      const bpStr = bp != null ? `${fmt(bp, 2)} K` : '—';
+      const fpStr     = fp  != null ? `${fmt(fp,  2)} K`               : '—';
+      const bpStr     = bp  != null ? `${fmt(bp,  2)} K`               : '—';
+      const ieStr     = ie1 != null ? `${fmt(ie1, 1)} kJ/mol`          : '—';
+      const eaStr     = ea  != null ? `${fmt(ea,  1)} kJ/mol`          : '—';
+      const enStr     = electronegativity != null ? fmt(electronegativity, 2) : '—';
+      const mhStr     = molarHeat != null ? `${fmt(molarHeat, 2)} J/(mol·K)` : '—';
+      const shellsStr = shells.length ? shells.join(', ')               : '—';
+      const phaseStr  = phase ? phase.charAt(0).toUpperCase() + phase.slice(1) : 'Unknown';
+      const catStr    = category ? category.replace(/_/g, ' ')          : '—';
 
       let densityStr = '—';
-      if (density_cm3 != null) {
-        densityStr = `${density_cm3} g/cm³`;
-      } else if (density_L != null) {
-        densityStr = `${density_L} g/L`;
-      }
-
-      const ieStr = ie1 != null ? `${fmt(ie1, 1)} kJ/mol` : '—';
-      const eaStr = ea != null ? `${fmt(ea, 1)} kJ/mol` : '—';
-      const oxArr = Array.isArray(ox) ? ox : [];
-      const oxStr = oxArr.length ? oxArr.join(', ') : '—';
-
-      const phaseStr = phase ? phase.charAt(0).toUpperCase() + phase.slice(1) : 'Unknown';
-      const catStr = category ? category.replace(/_/g, ' ') : '—';
-      const enStr = electronegativity != null ? `${fmt(electronegativity, 2)}` : '—';
-      const mhStr = molarHeat != null ? `${fmt(molarHeat, 2)} J/(mol·K)` : '—';
-      const shellsStr = shells.length ? shells.join(', ') : '—';
-
-      const appearanceStr = appearance || '—';
-      const discoveredStr = discoveredBy || '—';
-      const namedStr = namedBy || '—';
+      if      (density_cm3 != null) densityStr = `${density_cm3} g/cm³`;
+      else if (density_L   != null) densityStr = `${density_L} g/L`;
 
       infoContent.innerHTML = `
-        <div style="display:flex; flex-wrap:wrap; gap:0.75rem; align-items:flex-end;">
+        <div style="display:flex;flex-wrap:wrap;gap:0.75rem;align-items:flex-end;">
           <div>
-            <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Atomic number</div>
-            <div style="font-size:1.1rem; font-weight:600;">${number}</div>
+            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Atomic number</div>
+            <div style="font-size:1.1rem;font-weight:600;">${number}</div>
           </div>
           <div>
-            <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Symbol</div>
-            <div style="font-size:1.4rem; font-weight:700;">${symbol}</div>
+            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Symbol</div>
+            <div style="font-size:1.4rem;font-weight:700;">${symbol}</div>
           </div>
           <div>
-            <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Name</div>
-            <div style="font-size:1.05rem; font-weight:500;">${name}</div>
+            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Name</div>
+            <div style="font-size:1.05rem;font-weight:500;">${name}</div>
           </div>
           <div>
-            <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Average mass</div>
+            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Average mass</div>
             <div>${mass}</div>
           </div>
         </div>
 
-        <div style="margin-top:0.75rem; display:flex; flex-wrap:wrap; gap:1.25rem;">
+        <div style="margin-top:0.75rem;display:flex;flex-wrap:wrap;gap:1.25rem;">
           <div>
-            <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Group</div>
+            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Group</div>
             <div>${groupLabel}</div>
           </div>
           <div>
-            <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Period</div>
+            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Period</div>
             <div>${period ?? '—'}</div>
           </div>
           <div>
-            <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Phase at 25 °C</div>
+            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Phase at 25 °C</div>
             <div>${phaseStr}</div>
           </div>
           <div>
-            <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Category</div>
+            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Category</div>
             <div>${catStr}</div>
           </div>
         </div>
 
-        <div style="margin-top:0.75rem; display:grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap:0.75rem;">
+        <div style="margin-top:0.75rem;display:grid;
+                    grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:0.75rem;">
           <div>
-            <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Freezing point</div>
+            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Freezing point</div>
             <div>${fpStr}</div>
           </div>
           <div>
-            <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Boiling point</div>
+            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Boiling point</div>
             <div>${bpStr}</div>
           </div>
           <div>
-            <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Density</div>
+            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Density</div>
             <div>${densityStr}</div>
           </div>
           <div>
-            <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">1st ionization energy</div>
+            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">1st ionization energy</div>
             <div>${ieStr}</div>
           </div>
           <div>
-            <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Electron affinity</div>
+            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Electron affinity</div>
             <div>${eaStr}</div>
           </div>
           <div>
-            <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Electronegativity (Pauling)</div>
+            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Oxidation states</div>
+            <div>${oxStr}</div>
+          </div>
+          <div>
+            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Electronegativity (Pauling)</div>
             <div>${enStr}</div>
           </div>
           <div>
-            <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Molar heat</div>
+            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Molar heat</div>
             <div>${mhStr}</div>
           </div>
           <div>
-            <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Electron shells</div>
+            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Electron shells</div>
             <div>${shellsStr}</div>
           </div>
         </div>
 
-        <div style="margin-top:0.75rem; display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:0.75rem;">
+        <div style="margin-top:0.75rem;display:grid;
+                    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0.75rem;">
           <div>
-            <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Appearance</div>
-            <div>${appearanceStr}</div>
+            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Appearance</div>
+            <div>${appearance || '—'}</div>
           </div>
           <div>
-            <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Discovered by</div>
-            <div>${discoveredStr}</div>
+            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Discovered by</div>
+            <div>${discoveredBy || '—'}</div>
           </div>
           <div>
-            <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Named by</div>
-            <div>${namedStr}</div>
+            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Named by</div>
+            <div>${namedBy || '—'}</div>
           </div>
         </div>
 
         <div style="margin-top:0.75rem;">
-          <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Summary</div>
-          <p class="element-summary">
-            ${summaryText}
-          </p>
-          <div style="margin-top:0.5rem; font-size:0.75rem; color:var(--color-text-muted);">
+          <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Summary</div>
+          <p class="element-summary">${summaryText}</p>
+          <div style="margin-top:0.5rem;font-size:0.75rem;color:var(--color-text-muted);">
             Temperatures in K; density in g/cm³ (solids/liquids) or g/L (gases); energies in kJ/mol.
           </div>
         </div>
 
         <div style="margin-top:1rem;">
-          <div style="display:flex; flex-wrap:wrap; gap:0.5rem; align-items:center; justify-content:space-between; margin-bottom:0.35rem;">
-            <span style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">
+          <div style="display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;
+                      justify-content:space-between;margin-bottom:0.35rem;">
+            <span style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">
               Notes for this element (local to this browser)
             </span>
-            <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
-              <button type="button" id="exportNotesBtn"
-                      class="btn"
-                      style="padding:0.25rem 0.6rem; font-size:0.75rem;">
+            <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+              <button type="button" id="exportNotesBtn" class="btn"
+                      style="padding:0.25rem 0.6rem;font-size:0.75rem;">
                 Export all notes
               </button>
-              <label for="importNotesInput"
-                     class="btn"
-                     style="padding:0.25rem 0.6rem; font-size:0.75rem; cursor:pointer;">
+              abel for="importNotesInput" class="btn"
+                     style="padding:0.25rem 0.6rem;font-size:0.75rem;cursor:pointer;">
                 Import notes
               </label>
               <input id="importNotesInput" type="file" accept="application/json"
                      style="display:none;">
-              <button type="button" id="clearNotesBtn"
-                      class="btn"
-                      style="padding:0.25rem 0.6rem; font-size:0.75rem;">
+              <button type="button" id="clearNotesBtn" class="btn"
+                      style="padding:0.25rem 0.6rem;font-size:0.75rem;">
                 Clear this element
               </button>
             </div>
           </div>
-          <textarea id="elementNotes"
-                    rows="4"
-                    style="width:100%; padding:0.5rem; border-radius:0.5rem;
+          <textarea id="elementNotes" rows="4"
+                    style="width:100%;padding:0.5rem;border-radius:0.5rem;
                            border:1px solid var(--color-border);
                            background:var(--color-surface-2);
-                           font:inherit; resize:vertical;"></textarea>
+                           font:inherit;resize:vertical;"></textarea>
         </div>
       `;
 
       infoPanel.style.display = 'block';
 
-      const notes = loadAllNotes();
-      const existingNote = notes[number] || '';
-      const notesArea = document.getElementById('elementNotes');
-      const clearBtn = document.getElementById('clearNotesBtn');
-      const exportBtn = document.getElementById('exportNotesBtn');
+      const notes       = loadAllNotes();
+      const notesArea   = document.getElementById('elementNotes');
+      const clearBtn    = document.getElementById('clearNotesBtn');
+      const exportBtn   = document.getElementById('exportNotesBtn');
       const importInput = document.getElementById('importNotesInput');
 
       if (notesArea) {
-        notesArea.value = existingNote;
+        notesArea.value = notes[number] || '';
         notesArea.addEventListener('input', () => {
           const all = loadAllNotes();
           all[number] = notesArea.value;
           saveAllNotes(all);
         });
       }
-
       if (clearBtn) {
         clearBtn.addEventListener('click', () => {
           const all = loadAllNotes();
@@ -1090,33 +1255,35 @@
           if (notesArea) notesArea.value = '';
         });
       }
-
       if (exportBtn) {
         exportBtn.addEventListener('click', exportNotesToFile);
       }
-
       if (importInput) {
         importInput.addEventListener('change', () => {
           const file = importInput.files && importInput.files[0];
           if (!file) return;
-          importNotesFromFile(file, mergedNotes => {
-            const updated = mergedNotes[number] || '';
-            if (notesArea) notesArea.value = updated;
+          importNotesFromFile(file, merged => {
+            if (notesArea) notesArea.value = merged[number] || '';
             importInput.value = '';
           });
         });
       }
     }
 
+    // ── Click handlers ──────────────────────────────────────────────────────────
+
     function attachElementClickHandlers() {
-      const tiles = [...grid.querySelectorAll('.element:not(.placeholder)')];
-      tiles.forEach(tile => {
+      grid.querySelectorAll('.element:not(.placeholder)').forEach(tile => {
         tile.addEventListener('click', () => {
+          // Always show info panel
           showElementInfo(tile);
-          const groupNumber = getGroupNumberFromAtomicNumber(parseInt(tile.dataset.number, 10));
+
+          // Group highlight
+          const groupNumber = getGroupNumberFromAtomicNumber(
+            parseInt(tile.dataset.number, 10)
+          );
           if (groupNumber) {
-            const cells = groupRow.querySelectorAll('.group-cell');
-            cells.forEach(c => {
+            groupRow.querySelectorAll('.group-cell').forEach(c => {
               if (parseInt(c.dataset.iupac, 10) === groupNumber) {
                 c.setAttribute('data-active', 'true');
               } else {
@@ -1125,95 +1292,114 @@
             });
             applyGroupHighlight(groupNumber);
           }
+
+          // Game
+          handleGameClick(tile);
         });
       });
     }
 
+    // ── Initialization ──────────────────────────────────────────────────────────
+
+    function initApp(lookup) {
+      if (lookup) attachLookupData(lookup);
+
+      renderLegend();
+      renderGrid();
+      attachElementClickHandlers();
+
+      setTheme(
+        window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      );
+      setGroupModeDisplay(groupMode ? groupMode.value : 'both');
+
+      // Search
+      search.addEventListener('input', filterGrid);
+
+      // Reset button
+      resetBtn.addEventListener('click', () => {
+        search.value = '';
+        filterGrid();
+        clearGroupHighlight();
+      });
+
+      // Theme toggle
+      themeToggle.addEventListener('click', () => {
+        setTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+      });
+
+      // Group mode dropdown
+      if (groupMode) {
+        groupMode.addEventListener('change', () => {
+          setGroupModeDisplay(groupMode.value);
+          const activeTiles = [...grid.querySelectorAll('.element.same-group')];
+          if (activeTiles.length && infoPanel.style.display === 'block') {
+            showElementInfo(activeTiles[0]);
+          }
+        });
+      }
+
+      // Group row click
+      if (groupRow) {
+        groupRow.addEventListener('click', handleGroupClick);
+      }
+
+      // Game buttons
+      resetGameState();   // initialise HUD (grid exists now)
+
+      if (gameStartBtn) {
+        gameStartBtn.addEventListener('click', () => {
+          gameActive = true;
+          startNewRound('Game started — click the correct element tile!');
+        });
+      }
+
+      if (gameSkipBtn) {
+        gameSkipBtn.addEventListener('click', () => {
+          if (!gameActive) {
+            updateGameHUD('Start the game first.');
+            return;
+          }
+          gameFirstClickStreak = 0;
+          startNewRound('Skipped. New element given.');
+        });
+      }
+
+      if (gameResetScoreBtn) {
+        gameResetScoreBtn.addEventListener('click', resetGameState);
+      }
+
+      // Presentation mode
+      if (presentationToggle && appRoot) {
+        const labelSpan = presentationToggle.querySelector('.presentation-label');
+        presentationToggle.addEventListener('click', () => {
+          const isOn = appRoot.classList.toggle('presentation-mode');
+          if (isOn) {
+            previousThemeForPresentation = root.getAttribute('data-theme') || 'light';
+            setTheme('light');
+            if (labelSpan) labelSpan.textContent = 'Normal mode';
+          } else {
+            if (previousThemeForPresentation) setTheme(previousThemeForPresentation);
+            if (labelSpan) labelSpan.textContent = 'Presentation mode';
+          }
+        });
+      }
+    }
+
+    // Load lookup JSON then boot; fall back gracefully if file is missing
     fetch('periodic-table-lookup.json')
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
       .then(lookup => {
-        attachLookupData(lookup);
-        renderLegend();
-        renderGrid();
-        attachElementClickHandlers();
-
-        setTheme(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        setGroupModeDisplay(groupMode ? groupMode.value : 'both');
-
-        search.addEventListener('input', filterGrid);
-        resetBtn.addEventListener('click', () => {
-          search.value = '';
-          filterGrid();
-          clearGroupHighlight();
-        });
-        themeToggle.addEventListener('click', () => {
-          setTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
-        });
-        if (groupMode) {
-          groupMode.addEventListener('change', () => {
-            setGroupModeDisplay(groupMode.value);
-            const tiles = [...grid.querySelectorAll('.element.same-group')];
-            if (tiles.length && infoPanel.style.display === 'block') {
-              const tile = tiles[0];
-              showElementInfo(tile);
-            }
-          });
-        }
-        if (groupRow) {
-          groupRow.addEventListener('click', handleGroupClick);
-        }
-
-        if (presentationToggle && appRoot) {
-          const labelSpan = presentationToggle.querySelector('.presentation-label');
-          presentationToggle.addEventListener('click', () => {
-            const isOn = appRoot.classList.toggle('presentation-mode');
-            if (isOn) {
-              previousThemeForPresentation = root.getAttribute('data-theme') || 'light';
-              setTheme('light');
-              if (labelSpan) {
-                labelSpan.textContent = 'Normal mode';
-              }
-            } else {
-              if (previousThemeForPresentation) {
-                setTheme(previousThemeForPresentation);
-              }
-              if (labelSpan) {
-                labelSpan.textContent = 'Presentation mode';
-              }
-            }
-          });
-        }
+        console.log('Lookup loaded:', Object.keys(lookup).length, 'elements');
+        initApp(lookup);
       })
       .catch(err => {
-        console.error('Failed to load periodic-table-lookup.json', err);
-        renderLegend();
-        renderGrid();
-        attachElementClickHandlers();
-        setTheme(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        setGroupModeDisplay(groupMode ? groupMode.value : 'both');
-
-        search.addEventListener('input', filterGrid);
-        resetBtn.addEventListener('click', () => {
-          search.value = '';
-          filterGrid();
-          clearGroupHighlight();
-        });
-        themeToggle.addEventListener('click', () => {
-          setTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
-        });
-        if (groupMode) {
-          groupMode.addEventListener('change', () => {
-            setGroupModeDisplay(groupMode.value);
-            const tiles = [...grid.querySelectorAll('.element.same-group')];
-            if (tiles.length && infoPanel.style.display === 'block') {
-              const tile = tiles[0];
-              showElementInfo(tile);
-            }
-          });
-        }
-        if (groupRow) {
-          groupRow.addEventListener('click', handleGroupClick);
-        }
+        console.warn('periodic-table-lookup.json not found or invalid:', err.message);
+        console.warn('Running without lookup data — element details will be limited.');
+        initApp(null);
       });
   </script>
 </body>
