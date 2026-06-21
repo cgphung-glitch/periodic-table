@@ -1108,16 +1108,24 @@
         tile.classList.add('game-wrong');
         gameFirstClickStreak = 0;
 
-        if (gameAttemptsThisRound >= 3) {
+                if (gameAttemptsThisRound >= 3) {
+          // Reveal the correct tile
           const correctTile = grid.querySelector(
             `.element[data-number="${gameTargetElement.n}"]`
           );
           if (correctTile) correctTile.classList.add('game-target');
 
-          const revealMsg =
-            `Incorrect. The answer was ${gameTargetElement.name}. Moving on…`;
+          const answeredName = gameTargetElement.name;
+
+          // Update HUD immediately so the student sees the reveal message
+          const revealMsg = `Incorrect. The answer was ${answeredName}. Moving on…`;
           updateGameHUD(revealMsg);
-          setTimeout(() => startNewRound(revealMsg), 1400);
+
+          // After a short pause, pick a NEW element and continue
+          setTimeout(() => {
+            gameAttemptsThisRound = 0;
+            startNewRound(`New element after 3 failed attempts on ${answeredName}.`);
+          }, 1400);
         } else {
           updateGameHUD(
             `Incorrect. Try again (attempt ${gameAttemptsThisRound} of 3).`
