@@ -461,47 +461,21 @@
     Element click game
   </h2>
   <p style="margin-bottom: 0.75rem; font-size: var(--text-sm); color: var(--color-text-muted);">
-    Click the correct element tile for the given name.
-    First click: 5 pts &nbsp;|&nbsp; Second: 3 pts &nbsp;|&nbsp; Third: 1 pt.
-    After 3 wrong clicks a new element is given.
-    Ten consecutive first-click answers earn a 100-point bonus.
+    Click the correct element tile for the given name. First click: 5 pts; second: 3 pts; third: 1 pt. After 3 clicks, a new element is chosen.
+    Ten correct first-click answers in a row earn a 100-point bonus.
   </p>
 
-  <!-- Level selector -->
-  <div style="margin-bottom:0.85rem; display:flex; flex-wrap:wrap; gap:0.5rem; align-items:center;">
-    <span style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">
-      Level:
-    </span>
-    <button type="button" class="btn game-level-btn" data-level="beginner">
-      Beginner (1–36)
-    </button>
-    <button type="button" class="btn game-level-btn" data-level="experienced">
-      Experienced (no inner transition)
-    </button>
-    <button type="button" class="btn game-level-btn" data-level="advanced">
-      Advanced (all 118)
-    </button>
-    <button type="button" class="btn game-level-btn" data-level="challenge">
-      Challenge (symbols only)
-    </button>
-  </div>
-
-  <!-- HUD -->
   <div style="display:flex; flex-wrap:wrap; gap:0.75rem; align-items:center; margin-bottom:0.75rem;">
     <div>
-      <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Level</div>
-      <div id="gameLevelDisplay" style="font-size:1rem; font-weight:600;">—</div>
-    </div>
-    <div>
       <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Find this element</div>
-      <div id="gameTargetName" style="font-size:1.25rem; font-weight:700; color:var(--color-primary);">—</div>
+      <div id="gameTargetName" style="font-size:1.25rem; font-weight:600;">—</div>
     </div>
     <div>
       <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Score</div>
       <div id="gameScore" style="font-size:1.1rem; font-weight:600;">0</div>
     </div>
     <div>
-      <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Attempts</div>
+      <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Attempts (this round)</div>
       <div id="gameAttempts" style="font-size:1.1rem; font-weight:600;">0 / 3</div>
     </div>
     <div>
@@ -510,15 +484,71 @@
     </div>
   </div>
 
-  <div id="gameMessage"
-       style="font-size:0.95rem; min-height:1.4em; font-weight:500;
-              color:var(--color-primary); margin-bottom:0.5rem;"></div>
+  <div style="display:flex; flex-wrap:wrap; gap:0.75rem; align-items:end; margin:0.75rem 0;">
+    <label>
+      <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Click timer</div>
+      <div style="font-weight:600;">30 seconds</div>
+    </label>
 
-  <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
-    <button type="button" class="btn primary" id="gameStartBtn">Start / New game</button>
-    <button type="button" class="btn"         id="gameSkipBtn">Skip element</button>
-    <button type="button" class="btn"         id="gameResetScoreBtn">Reset score</button>
+    <label for="gameDurationSelect">
+      <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Game duration</div>
+      <select id="gameDurationSelect" class="btn">
+        <option value="10">10 minutes</option>
+        <option value="20">20 minutes</option>
+        <option value="30">30 minutes</option>
+      </select>
+    </label>
+
+    <div>
+      <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Time left (game)</div>
+      <div id="gameTimeLeft" style="font-size:1.1rem; font-weight:600;">—</div>
+    </div>
+
+    <div>
+      <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Time left (click)</div>
+      <div id="clickTimeLeft" style="font-size:1.1rem; font-weight:600;">30s</div>
+    </div>
+
+    <div>
+      <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Last game score</div>
+      <div id="lastGameScore" style="font-size:1.1rem; font-weight:600;">—</div>
+    </div>
   </div>
+
+  <div id="gameMessage" style="font-size:0.9rem; min-height:1.2em;"></div>
+
+  <div style="margin-top:0.75rem; display:flex; flex-wrap:wrap; gap:0.5rem;">
+    <button type="button" class="btn" id="gameStartBtn">
+      Start / New game
+    </button>
+    <button type="button" class="btn" id="gameSkipBtn">
+      Skip element
+    </button>
+    <button type="button" class="btn" id="gameResetScoreBtn">
+      Reset score
+    </button>
+  </div>
+
+  <section style="margin-top:1rem;">
+    <h3 style="font-size: var(--text-base); margin-bottom: 0.5rem;">Leaderboard</h3>
+    <div id="leaderboardEmpty" style="color: var(--color-text-muted); font-size: var(--text-sm);">
+      No scores yet.
+    </div>
+    <div class="table-wrap">
+      <table id="leaderboardTable" style="width:100%; border-collapse:collapse; display:none;">
+        <thead>
+          <tr style="text-align:left; border-bottom:1px solid var(--color-divider);">
+            <th style="padding:0.5rem;">Rank</th>
+            <th style="padding:0.5rem;">Score</th>
+            <th style="padding:0.5rem;">Date</th>
+            <th style="padding:0.5rem;">Time</th>
+            <th style="padding:0.5rem;">Duration</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboardBody"></tbody>
+      </table>
+    </div>
+  </section>
 </section>
 
     <main id="main" class="panel">
@@ -571,958 +601,875 @@
     </section>
   </div>
 
-  <script>
-    const elements = [
-      {n:1,s:'H',name:'Hydrogen',mass:'1.008',group:'nonmetal',x:1,y:1},
-      {n:2,s:'He',name:'Helium',mass:'4.0026',group:'noble-gas',x:18,y:1},
-      {n:3,s:'Li',name:'Lithium',mass:'6.94',group:'alkali-metal',x:1,y:2},
-      {n:4,s:'Be',name:'Beryllium',mass:'9.0122',group:'alkaline-earth-metal',x:2,y:2},
-      {n:5,s:'B',name:'Boron',mass:'10.81',group:'metalloid',x:13,y:2},
-      {n:6,s:'C',name:'Carbon',mass:'12.011',group:'nonmetal',x:14,y:2},
-      {n:7,s:'N',name:'Nitrogen',mass:'14.007',group:'nonmetal',x:15,y:2},
-      {n:8,s:'O',name:'Oxygen',mass:'15.999',group:'nonmetal',x:16,y:2},
-      {n:9,s:'F',name:'Fluorine',mass:'18.998',group:'halogen',x:17,y:2},
-      {n:10,s:'Ne',name:'Neon',mass:'20.180',group:'noble-gas',x:18,y:2},
-      {n:11,s:'Na',name:'Sodium',mass:'22.990',group:'alkali-metal',x:1,y:3},
-      {n:12,s:'Mg',name:'Magnesium',mass:'24.305',group:'alkaline-earth-metal',x:2,y:3},
-      {n:13,s:'Al',name:'Aluminum',mass:'26.982',group:'post-transition-metal',x:13,y:3},
-      {n:14,s:'Si',name:'Silicon',mass:'28.085',group:'metalloid',x:14,y:3},
-      {n:15,s:'P',name:'Phosphorus',mass:'30.974',group:'nonmetal',x:15,y:3},
-      {n:16,s:'S',name:'Sulfur',mass:'32.06',group:'nonmetal',x:16,y:3},
-      {n:17,s:'Cl',name:'Chlorine',mass:'35.45',group:'halogen',x:17,y:3},
-      {n:18,s:'Ar',name:'Argon',mass:'39.948',group:'noble-gas',x:18,y:3},
-      {n:19,s:'K',name:'Potassium',mass:'39.098',group:'alkali-metal',x:1,y:4},
-      {n:20,s:'Ca',name:'Calcium',mass:'40.078',group:'alkaline-earth-metal',x:2,y:4},
-      {n:21,s:'Sc',name:'Scandium',mass:'44.956',group:'transition-metal',x:3,y:4},
-      {n:22,s:'Ti',name:'Titanium',mass:'47.867',group:'transition-metal',x:4,y:4},
-      {n:23,s:'V',name:'Vanadium',mass:'50.942',group:'transition-metal',x:5,y:4},
-      {n:24,s:'Cr',name:'Chromium',mass:'51.996',group:'transition-metal',x:6,y:4},
-      {n:25,s:'Mn',name:'Manganese',mass:'54.938',group:'transition-metal',x:7,y:4},
-      {n:26,s:'Fe',name:'Iron',mass:'55.845',group:'transition-metal',x:8,y:4},
-      {n:27,s:'Co',name:'Cobalt',mass:'58.933',group:'transition-metal',x:9,y:4},
-      {n:28,s:'Ni',name:'Nickel',mass:'58.693',group:'transition-metal',x:10,y:4},
-      {n:29,s:'Cu',name:'Copper',mass:'63.546',group:'transition-metal',x:11,y:4},
-      {n:30,s:'Zn',name:'Zinc',mass:'65.38',group:'transition-metal',x:12,y:4},
-      {n:31,s:'Ga',name:'Gallium',mass:'69.723',group:'post-transition-metal',x:13,y:4},
-      {n:32,s:'Ge',name:'Germanium',mass:'72.630',group:'metalloid',x:14,y:4},
-      {n:33,s:'As',name:'Arsenic',mass:'74.922',group:'metalloid',x:15,y:4},
-      {n:34,s:'Se',name:'Selenium',mass:'78.971',group:'nonmetal',x:16,y:4},
-      {n:35,s:'Br',name:'Bromine',mass:'79.904',group:'halogen',x:17,y:4},
-      {n:36,s:'Kr',name:'Krypton',mass:'83.798',group:'noble-gas',x:18,y:4},
-      {n:37,s:'Rb',name:'Rubidium',mass:'85.468',group:'alkali-metal',x:1,y:5},
-      {n:38,s:'Sr',name:'Strontium',mass:'87.62',group:'alkaline-earth-metal',x:2,y:5},
-      {n:39,s:'Y',name:'Yttrium',mass:'88.906',group:'transition-metal',x:3,y:5},
-      {n:40,s:'Zr',name:'Zirconium',mass:'91.224',group:'transition-metal',x:4,y:5},
-      {n:41,s:'Nb',name:'Niobium',mass:'92.906',group:'transition-metal',x:5,y:5},
-      {n:42,s:'Mo',name:'Molybdenum',mass:'95.95',group:'transition-metal',x:6,y:5},
-      {n:43,s:'Tc',name:'Technetium',mass:'[98]',group:'transition-metal',x:7,y:5},
-      {n:44,s:'Ru',name:'Ruthenium',mass:'101.07',group:'transition-metal',x:8,y:5},
-      {n:45,s:'Rh',name:'Rhodium',mass:'102.91',group:'transition-metal',x:9,y:5},
-      {n:46,s:'Pd',name:'Palladium',mass:'106.42',group:'transition-metal',x:10,y:5},
-      {n:47,s:'Ag',name:'Silver',mass:'107.87',group:'transition-metal',x:11,y:5},
-      {n:48,s:'Cd',name:'Cadmium',mass:'112.41',group:'transition-metal',x:12,y:5},
-      {n:49,s:'In',name:'Indium',mass:'114.82',group:'post-transition-metal',x:13,y:5},
-      {n:50,s:'Sn',name:'Tin',mass:'118.71',group:'post-transition-metal',x:14,y:5},
-      {n:51,s:'Sb',name:'Antimony',mass:'121.76',group:'metalloid',x:15,y:5},
-      {n:52,s:'Te',name:'Tellurium',mass:'127.60',group:'metalloid',x:16,y:5},
-      {n:53,s:'I',name:'Iodine',mass:'126.90',group:'halogen',x:17,y:5},
-      {n:54,s:'Xe',name:'Xenon',mass:'131.29',group:'noble-gas',x:18,y:5},
-      {n:55,s:'Cs',name:'Cesium',mass:'132.91',group:'alkali-metal',x:1,y:6},
-      {n:56,s:'Ba',name:'Barium',mass:'137.33',group:'alkaline-earth-metal',x:2,y:6},
-      {n:57,s:'La',name:'Lanthanum',mass:'138.91',group:'lanthanide',x:3,y:8},
-      {n:58,s:'Ce',name:'Cerium',mass:'140.12',group:'lanthanide',x:4,y:8},
-      {n:59,s:'Pr',name:'Praseodymium',mass:'140.91',group:'lanthanide',x:5,y:8},
-      {n:60,s:'Nd',name:'Neodymium',mass:'144.24',group:'lanthanide',x:6,y:8},
-      {n:61,s:'Pm',name:'Promethium',mass:'[145]',group:'lanthanide',x:7,y:8},
-      {n:62,s:'Sm',name:'Samarium',mass:'150.36',group:'lanthanide',x:8,y:8},
-      {n:63,s:'Eu',name:'Europium',mass:'151.96',group:'lanthanide',x:9,y:8},
-      {n:64,s:'Gd',name:'Gadolinium',mass:'157.25',group:'lanthanide',x:10,y:8},
-      {n:65,s:'Tb',name:'Terbium',mass:'158.93',group:'lanthanide',x:11,y:8},
-      {n:66,s:'Dy',name:'Dysprosium',mass:'162.50',group:'lanthanide',x:12,y:8},
-      {n:67,s:'Ho',name:'Holmium',mass:'164.93',group:'lanthanide',x:13,y:8},
-      {n:68,s:'Er',name:'Erbium',mass:'167.26',group:'lanthanide',x:14,y:8},
-      {n:69,s:'Tm',name:'Thulium',mass:'168.93',group:'lanthanide',x:15,y:8},
-      {n:70,s:'Yb',name:'Ytterbium',mass:'173.05',group:'lanthanide',x:16,y:8},
-      {n:71,s:'Lu',name:'Lutetium',mass:'174.97',group:'lanthanide',x:17,y:8},
-      {n:72,s:'Hf',name:'Hafnium',mass:'178.49',group:'transition-metal',x:4,y:6},
-      {n:73,s:'Ta',name:'Tantalum',mass:'180.95',group:'transition-metal',x:5,y:6},
-      {n:74,s:'W',name:'Tungsten',mass:'183.84',group:'transition-metal',x:6,y:6},
-      {n:75,s:'Re',name:'Rhenium',mass:'186.21',group:'transition-metal',x:7,y:6},
-      {n:76,s:'Os',name:'Osmium',mass:'190.23',group:'transition-metal',x:8,y:6},
-      {n:77,s:'Ir',name:'Iridium',mass:'192.22',group:'transition-metal',x:9,y:6},
-      {n:78,s:'Pt',name:'Platinum',mass:'195.08',group:'transition-metal',x:10,y:6},
-      {n:79,s:'Au',name:'Gold',mass:'196.97',group:'transition-metal',x:11,y:6},
-      {n:80,s:'Hg',name:'Mercury',mass:'200.59',group:'transition-metal',x:12,y:6},
-      {n:81,s:'Tl',name:'Thallium',mass:'204.38',group:'post-transition-metal',x:13,y:6},
-      {n:82,s:'Pb',name:'Lead',mass:'207.2',group:'post-transition-metal',x:14,y:6},
-      {n:83,s:'Bi',name:'Bismuth',mass:'208.98',group:'post-transition-metal',x:15,y:6},
-      {n:84,s:'Po',name:'Polonium',mass:'[209]',group:'post-transition-metal',x:16,y:6},
-      {n:85,s:'At',name:'Astatine',mass:'[210]',group:'halogen',x:17,y:6},
-      {n:86,s:'Rn',name:'Radon',mass:'[222]',group:'noble-gas',x:18,y:6},
-      {n:87,s:'Fr',name:'Francium',mass:'[223]',group:'alkali-metal',x:1,y:7},
-      {n:88,s:'Ra',name:'Radium',mass:'[226]',group:'alkaline-earth-metal',x:2,y:7},
-      {n:89,s:'Ac',name:'Actinium',mass:'[227]',group:'actinide',x:3,y:9},
-      {n:90,s:'Th',name:'Thorium',mass:'232.04',group:'actinide',x:4,y:9},
-      {n:91,s:'Pa',name:'Protactinium',mass:'231.04',group:'actinide',x:5,y:9},
-      {n:92,s:'U',name:'Uranium',mass:'238.03',group:'actinide',x:6,y:9},
-      {n:93,s:'Np',name:'Neptunium',mass:'[237]',group:'actinide',x:7,y:9},
-      {n:94,s:'Pu',name:'Plutonium',mass:'[244]',group:'actinide',x:8,y:9},
-      {n:95,s:'Am',name:'Americium',mass:'[243]',group:'actinide',x:9,y:9},
-      {n:96,s:'Cm',name:'Curium',mass:'[247]',group:'actinide',x:10,y:9},
-      {n:97,s:'Bk',name:'Berkelium',mass:'[247]',group:'actinide',x:11,y:9},
-      {n:98,s:'Cf',name:'Californium',mass:'[251]',group:'actinide',x:12,y:9},
-      {n:99,s:'Es',name:'Einsteinium',mass:'[252]',group:'actinide',x:13,y:9},
-      {n:100,s:'Fm',name:'Fermium',mass:'[257]',group:'actinide',x:14,y:9},
-      {n:101,s:'Md',name:'Mendelevium',mass:'[258]',group:'actinide',x:15,y:9},
-      {n:102,s:'No',name:'Nobelium',mass:'[259]',group:'actinide',x:16,y:9},
-      {n:103,s:'Lr',name:'Lawrencium',mass:'[266]',group:'actinide',x:17,y:9},
-      {n:104,s:'Rf',name:'Rutherfordium',mass:'[267]',group:'transition-metal',x:4,y:7},
-      {n:105,s:'Db',name:'Dubnium',mass:'[268]',group:'transition-metal',x:5,y:7},
-      {n:106,s:'Sg',name:'Seaborgium',mass:'[269]',group:'transition-metal',x:6,y:7},
-      {n:107,s:'Bh',name:'Bohrium',mass:'[270]',group:'transition-metal',x:7,y:7},
-      {n:108,s:'Hs',name:'Hassium',mass:'[277]',group:'transition-metal',x:8,y:7},
-      {n:109,s:'Mt',name:'Meitnerium',mass:'[278]',group:'unknown',x:9,y:7},
-      {n:110,s:'Ds',name:'Darmstadtium',mass:'[281]',group:'unknown',x:10,y:7},
-      {n:111,s:'Rg',name:'Roentgenium',mass:'[282]',group:'unknown',x:11,y:7},
-      {n:112,s:'Cn',name:'Copernicium',mass:'[285]',group:'transition-metal',x:12,y:7},
-      {n:113,s:'Nh',name:'Nihonium',mass:'[286]',group:'unknown',x:13,y:7},
-      {n:114,s:'Fl',name:'Flerovium',mass:'[289]',group:'post-transition-metal',x:14,y:7},
-      {n:115,s:'Mc',name:'Moscovium',mass:'[290]',group:'unknown',x:15,y:7},
-      {n:116,s:'Lv',name:'Livermorium',mass:'[293]',group:'unknown',x:16,y:7},
-      {n:117,s:'Ts',name:'Tennessine',mass:'[294]',group:'unknown',x:17,y:7},
-      {n:118,s:'Og',name:'Oganesson',mass:'[294]',group:'unknown',x:18,y:7}
-    ];
+<script>
+  const elements = [
+    {n:1,s:'H',name:'Hydrogen',mass:'1.008',group:'nonmetal',x:1,y:1},
+    {n:2,s:'He',name:'Helium',mass:'4.0026',group:'noble-gas',x:18,y:1},
+    {n:3,s:'Li',name:'Lithium',mass:'6.94',group:'alkali-metal',x:1,y:2},
+    {n:4,s:'Be',name:'Beryllium',mass:'9.0122',group:'alkaline-earth-metal',x:2,y:2},
+    {n:5,s:'B',name:'Boron',mass:'10.81',group:'metalloid',x:13,y:2},
+    {n:6,s:'C',name:'Carbon',mass:'12.011',group:'nonmetal',x:14,y:2},
+    {n:7,s:'N',name:'Nitrogen',mass:'14.007',group:'nonmetal',x:15,y:2},
+    {n:8,s:'O',name:'Oxygen',mass:'15.999',group:'nonmetal',x:16,y:2},
+    {n:9,s:'F',name:'Fluorine',mass:'18.998',group:'halogen',x:17,y:2},
+    {n:10,s:'Ne',name:'Neon',mass:'20.180',group:'noble-gas',x:18,y:2},
+    {n:11,s:'Na',name:'Sodium',mass:'22.990',group:'alkali-metal',x:1,y:3},
+    {n:12,s:'Mg',name:'Magnesium',mass:'24.305',group:'alkaline-earth-metal',x:2,y:3},
+    {n:13,s:'Al',name:'Aluminum',mass:'26.982',group:'post-transition-metal',x:13,y:3},
+    {n:14,s:'Si',name:'Silicon',mass:'28.085',group:'metalloid',x:14,y:3},
+    {n:15,s:'P',name:'Phosphorus',mass:'30.974',group:'nonmetal',x:15,y:3},
+    {n:16,s:'S',name:'Sulfur',mass:'32.06',group:'nonmetal',x:16,y:3},
+    {n:17,s:'Cl',name:'Chlorine',mass:'35.45',group:'halogen',x:17,y:3},
+    {n:18,s:'Ar',name:'Argon',mass:'39.948',group:'noble-gas',x:18,y:3},
+    {n:19,s:'K',name:'Potassium',mass:'39.098',group:'alkali-metal',x:1,y:4},
+    {n:20,s:'Ca',name:'Calcium',mass:'40.078',group:'alkaline-earth-metal',x:2,y:4},
+    {n:21,s:'Sc',name:'Scandium',mass:'44.956',group:'transition-metal',x:3,y:4},
+    {n:22,s:'Ti',name:'Titanium',mass:'47.867',group:'transition-metal',x:4,y:4},
+    {n:23,s:'V',name:'Vanadium',mass:'50.942',group:'transition-metal',x:5,y:4},
+    {n:24,s:'Cr',name:'Chromium',mass:'51.996',group:'transition-metal',x:6,y:4},
+    {n:25,s:'Mn',name:'Manganese',mass:'54.938',group:'transition-metal',x:7,y:4},
+    {n:26,s:'Fe',name:'Iron',mass:'55.845',group:'transition-metal',x:8,y:4},
+    {n:27,s:'Co',name:'Cobalt',mass:'58.933',group:'transition-metal',x:9,y:4},
+    {n:28,s:'Ni',name:'Nickel',mass:'58.693',group:'transition-metal',x:10,y:4},
+    {n:29,s:'Cu',name:'Copper',mass:'63.546',group:'transition-metal',x:11,y:4},
+    {n:30,s:'Zn',name:'Zinc',mass:'65.38',group:'transition-metal',x:12,y:4},
+    {n:31,s:'Ga',name:'Gallium',mass:'69.723',group:'post-transition-metal',x:13,y:4},
+    {n:32,s:'Ge',name:'Germanium',mass:'72.630',group:'metalloid',x:14,y:4},
+    {n:33,s:'As',name:'Arsenic',mass:'74.922',group:'metalloid',x:15,y:4},
+    {n:34,s:'Se',name:'Selenium',mass:'78.971',group:'nonmetal',x:16,y:4},
+    {n:35,s:'Br',name:'Bromine',mass:'79.904',group:'halogen',x:17,y:4},
+    {n:36,s:'Kr',name:'Krypton',mass:'83.798',group:'noble-gas',x:18,y:4},
+    {n:37,s:'Rb',name:'Rubidium',mass:'85.468',group:'alkali-metal',x:1,y:5},
+    {n:38,s:'Sr',name:'Strontium',mass:'87.62',group:'alkaline-earth-metal',x:2,y:5},
+    {n:39,s:'Y',name:'Yttrium',mass:'88.906',group:'transition-metal',x:3,y:5},
+    {n:40,s:'Zr',name:'Zirconium',mass:'91.224',group:'transition-metal',x:4,y:5},
+    {n:41,s:'Nb',name:'Niobium',mass:'92.906',group:'transition-metal',x:5,y:5},
+    {n:42,s:'Mo',name:'Molybdenum',mass:'95.95',group:'transition-metal',x:6,y:5},
+    {n:43,s:'Tc',name:'Technetium',mass:'[98]',group:'transition-metal',x:7,y:5},
+    {n:44,s:'Ru',name:'Ruthenium',mass:'101.07',group:'transition-metal',x:8,y:5},
+    {n:45,s:'Rh',name:'Rhodium',mass:'102.91',group:'transition-metal',x:9,y:5},
+    {n:46,s:'Pd',name:'Palladium',mass:'106.42',group:'transition-metal',x:10,y:5},
+    {n:47,s:'Ag',name:'Silver',mass:'107.87',group:'transition-metal',x:11,y:5},
+    {n:48,s:'Cd',name:'Cadmium',mass:'112.41',group:'transition-metal',x:12,y:5},
+    {n:49,s:'In',name:'Indium',mass:'114.82',group:'post-transition-metal',x:13,y:5},
+    {n:50,s:'Sn',name:'Tin',mass:'118.71',group:'post-transition-metal',x:14,y:5},
+    {n:51,s:'Sb',name:'Antimony',mass:'121.76',group:'metalloid',x:15,y:5},
+    {n:52,s:'Te',name:'Tellurium',mass:'127.60',group:'metalloid',x:16,y:5},
+    {n:53,s:'I',name:'Iodine',mass:'126.90',group:'halogen',x:17,y:5},
+    {n:54,s:'Xe',name:'Xenon',mass:'131.29',group:'noble-gas',x:18,y:5},
+    {n:55,s:'Cs',name:'Cesium',mass:'132.91',group:'alkali-metal',x:1,y:6},
+    {n:56,s:'Ba',name:'Barium',mass:'137.33',group:'alkaline-earth-metal',x:2,y:6},
+    {n:57,s:'La',name:'Lanthanum',mass:'138.91',group:'lanthanide',x:3,y:8},
+    {n:58,s:'Ce',name:'Cerium',mass:'140.12',group:'lanthanide',x:4,y:8},
+    {n:59,s:'Pr',name:'Praseodymium',mass:'140.91',group:'lanthanide',x:5,y:8},
+    {n:60,s:'Nd',name:'Neodymium',mass:'144.24',group:'lanthanide',x:6,y:8},
+    {n:61,s:'Pm',name:'Promethium',mass:'[145]',group:'lanthanide',x:7,y:8},
+    {n:62,s:'Sm',name:'Samarium',mass:'150.36',group:'lanthanide',x:8,y:8},
+    {n:63,s:'Eu',name:'Europium',mass:'151.96',group:'lanthanide',x:9,y:8},
+    {n:64,s:'Gd',name:'Gadolinium',mass:'157.25',group:'lanthanide',x:10,y:8},
+    {n:65,s:'Tb',name:'Terbium',mass:'158.93',group:'lanthanide',x:11,y:8},
+    {n:66,s:'Dy',name:'Dysprosium',mass:'162.50',group:'lanthanide',x:12,y:8},
+    {n:67,s:'Ho',name:'Holmium',mass:'164.93',group:'lanthanide',x:13,y:8},
+    {n:68,s:'Er',name:'Erbium',mass:'167.26',group:'lanthanide',x:14,y:8},
+    {n:69,s:'Tm',name:'Thulium',mass:'168.93',group:'lanthanide',x:15,y:8},
+    {n:70,s:'Yb',name:'Ytterbium',mass:'173.05',group:'lanthanide',x:16,y:8},
+    {n:71,s:'Lu',name:'Lutetium',mass:'174.97',group:'lanthanide',x:17,y:8},
+    {n:72,s:'Hf',name:'Hafnium',mass:'178.49',group:'transition-metal',x:4,y:6},
+    {n:73,s:'Ta',name:'Tantalum',mass:'180.95',group:'transition-metal',x:5,y:6},
+    {n:74,s:'W',name:'Tungsten',mass:'183.84',group:'transition-metal',x:6,y:6},
+    {n:75,s:'Re',name:'Rhenium',mass:'186.21',group:'transition-metal',x:7,y:6},
+    {n:76,s:'Os',name:'Osmium',mass:'190.23',group:'transition-metal',x:8,y:6},
+    {n:77,s:'Ir',name:'Iridium',mass:'192.22',group:'transition-metal',x:9,y:6},
+    {n:78,s:'Pt',name:'Platinum',mass:'195.08',group:'transition-metal',x:10,y:6},
+    {n:79,s:'Au',name:'Gold',mass:'196.97',group:'transition-metal',x:11,y:6},
+    {n:80,s:'Hg',name:'Mercury',mass:'200.59',group:'transition-metal',x:12,y:6},
+    {n:81,s:'Tl',name:'Thallium',mass:'204.38',group:'post-transition-metal',x:13,y:6},
+    {n:82,s:'Pb',name:'Lead',mass:'207.2',group:'post-transition-metal',x:14,y:6},
+    {n:83,s:'Bi',name:'Bismuth',mass:'208.98',group:'post-transition-metal',x:15,y:6},
+    {n:84,s:'Po',name:'Polonium',mass:'[209]',group:'post-transition-metal',x:16,y:6},
+    {n:85,s:'At',name:'Astatine',mass:'[210]',group:'halogen',x:17,y:6},
+    {n:86,s:'Rn',name:'Radon',mass:'[222]',group:'noble-gas',x:18,y:6},
+    {n:87,s:'Fr',name:'Francium',mass:'[223]',group:'alkali-metal',x:1,y:7},
+    {n:88,s:'Ra',name:'Radium',mass:'[226]',group:'alkaline-earth-metal',x:2,y:7},
+    {n:89,s:'Ac',name:'Actinium',mass:'[227]',group:'actinide',x:3,y:9},
+    {n:90,s:'Th',name:'Thorium',mass:'232.04',group:'actinide',x:4,y:9},
+    {n:91,s:'Pa',name:'Protactinium',mass:'231.04',group:'actinide',x:5,y:9},
+    {n:92,s:'U',name:'Uranium',mass:'238.03',group:'actinide',x:6,y:9},
+    {n:93,s:'Np',name:'Neptunium',mass:'[237]',group:'actinide',x:7,y:9},
+    {n:94,s:'Pu',name:'Plutonium',mass:'[244]',group:'actinide',x:8,y:9},
+    {n:95,s:'Am',name:'Americium',mass:'[243]',group:'actinide',x:9,y:9},
+    {n:96,s:'Cm',name:'Curium',mass:'[247]',group:'actinide',x:10,y:9},
+    {n:97,s:'Bk',name:'Berkelium',mass:'[247]',group:'actinide',x:11,y:9},
+    {n:98,s:'Cf',name:'Californium',mass:'[251]',group:'actinide',x:12,y:9},
+    {n:99,s:'Es',name:'Einsteinium',mass:'[252]',group:'actinide',x:13,y:9},
+    {n:100,s:'Fm',name:'Fermium',mass:'[257]',group:'actinide',x:14,y:9},
+    {n:101,s:'Md',name:'Mendelevium',mass:'[258]',group:'actinide',x:15,y:9},
+    {n:102,s:'No',name:'Nobelium',mass:'[259]',group:'actinide',x:16,y:9},
+    {n:103,s:'Lr',name:'Lawrencium',mass:'[266]',group:'actinide',x:17,y:9},
+    {n:104,s:'Rf',name:'Rutherfordium',mass:'[267]',group:'transition-metal',x:4,y:7},
+    {n:105,s:'Db',name:'Dubnium',mass:'[268]',group:'transition-metal',x:5,y:7},
+    {n:106,s:'Sg',name:'Seaborgium',mass:'[269]',group:'transition-metal',x:6,y:7},
+    {n:107,s:'Bh',name:'Bohrium',mass:'[270]',group:'transition-metal',x:7,y:7},
+    {n:108,s:'Hs',name:'Hassium',mass:'[277]',group:'transition-metal',x:8,y:7},
+    {n:109,s:'Mt',name:'Meitnerium',mass:'[278]',group:'unknown',x:9,y:7},
+    {n:110,s:'Ds',name:'Darmstadtium',mass:'[281]',group:'unknown',x:10,y:7},
+    {n:111,s:'Rg',name:'Roentgenium',mass:'[282]',group:'unknown',x:11,y:7},
+    {n:112,s:'Cn',name:'Copernicium',mass:'[285]',group:'transition-metal',x:12,y:7},
+    {n:113,s:'Nh',name:'Nihonium',mass:'[286]',group:'unknown',x:13,y:7},
+    {n:114,s:'Fl',name:'Flerovium',mass:'[289]',group:'post-transition-metal',x:14,y:7},
+    {n:115,s:'Mc',name:'Moscovium',mass:'[290]',group:'unknown',x:15,y:7},
+    {n:116,s:'Lv',name:'Livermorium',mass:'[293]',group:'unknown',x:16,y:7},
+    {n:117,s:'Ts',name:'Tennessine',mass:'[294]',group:'unknown',x:17,y:7},
+    {n:118,s:'Og',name:'Oganesson',mass:'[294]',group:'unknown',x:18,y:7}
+  ];
 
-    const legendLabels = {
-      'alkali-metal': 'Alkali metals',
-      'alkaline-earth-metal': 'Alkaline earth metals',
-      'transition-metal': 'Transition metals',
-      'post-transition-metal': 'Post-transition metals',
-      'metalloid': 'Metalloids',
-      'nonmetal': 'Other nonmetals',
-      'halogen': 'Halogens',
-      'noble-gas': 'Noble gases',
-      'lanthanide': 'Lanthanides',
-      'actinide': 'Actinides',
-      'unknown': 'Unknown / provisional'
-    };
+  const legendLabels = {
+    'alkali-metal': 'Alkali metals',
+    'alkaline-earth-metal': 'Alkaline earth metals',
+    'transition-metal': 'Transition metals',
+    'post-transition-metal': 'Post-transition metals',
+    'metalloid': 'Metalloids',
+    'nonmetal': 'Other nonmetals',
+    'halogen': 'Halogens',
+    'noble-gas': 'Noble gases',
+    'lanthanide': 'Lanthanides',
+    'actinide': 'Actinides',
+    'unknown': 'Unknown / provisional'
+  };
 
-    const grid = document.getElementById('periodicGrid');
-    const legend = document.getElementById('legend');
-    const search = document.getElementById('search');
-    const resetBtn = document.getElementById('resetBtn');
-    const themeToggle = document.querySelector('[data-theme-toggle]');
-    const root = document.documentElement;
-    const groupMode = document.getElementById('groupMode');
-    const groupRow = document.getElementById('groupRow');
-    const infoPanel = document.getElementById('elementInfo');
-    const infoContent = document.getElementById('elementInfoContent');
-    const appRoot = document.querySelector('.app');
-    const presentationToggle = document.getElementById('presentationToggle');
+  const grid = document.getElementById('periodicGrid');
+  const legend = document.getElementById('legend');
+  const search = document.getElementById('search');
+  const resetBtn = document.getElementById('resetBtn');
+  const themeToggle = document.querySelector('[data-theme-toggle]');
+  const root = document.documentElement;
+  const groupMode = document.getElementById('groupMode');
+  const groupRow = document.getElementById('groupRow');
+  const infoPanel = document.getElementById('elementInfo');
+  const infoContent = document.getElementById('elementInfoContent');
+  const appRoot = document.querySelector('.app');
+  const presentationToggle = document.getElementById('presentationToggle');
 
-    const gameTargetNameEl = document.getElementById('gameTargetName');
-    const gameScoreEl = document.getElementById('gameScore');
-    const gameAttemptsEl = document.getElementById('gameAttempts');
-    const gameStreakEl = document.getElementById('gameStreak');
-    const gameMessageEl = document.getElementById('gameMessage');
-    const gameStartBtn = document.getElementById('gameStartBtn');
-    const gameSkipBtn = document.getElementById('gameSkipBtn');
-    const gameResetScoreBtn = document.getElementById('gameResetScoreBtn');
-    const gameLevelDisplay = document.getElementById('gameLevelDisplay');
+  const gameTargetNameEl = document.getElementById('gameTargetName');
+  const gameScoreEl = document.getElementById('gameScore');
+  const gameAttemptsEl = document.getElementById('gameAttempts');
+  const gameStreakEl = document.getElementById('gameStreak');
+  const gameMessageEl = document.getElementById('gameMessage');
+  const gameStartBtn = document.getElementById('gameStartBtn');
+  const gameSkipBtn = document.getElementById('gameSkipBtn');
+  const gameResetScoreBtn = document.getElementById('gameResetScoreBtn');
+  const gameDurationSelect = document.getElementById('gameDurationSelect');
+  const gameTimeLeftEl = document.getElementById('gameTimeLeft');
+  const clickTimeLeftEl = document.getElementById('clickTimeLeft');
+  const lastGameScoreEl = document.getElementById('lastGameScore');
+  const leaderboardEmptyEl = document.getElementById('leaderboardEmpty');
+  const leaderboardTableEl = document.getElementById('leaderboardTable');
+  const leaderboardBodyEl = document.getElementById('leaderboardBody');
 
-    const NOTES_STORAGE_KEY = 'pt-notes-v1';
-    let previousThemeForPresentation = null;
+  const NOTES_STORAGE_KEY = 'pt-notes-v1';
+  const GAME_LAST_SCORE_KEY = 'pt-game-last-score-v1';
+  const GAME_LEADERBOARD_KEY = 'pt-game-leaderboard-v1';
+  const CLICK_TIME_LIMIT_SECONDS = 30;
 
-    function loadAllNotes() {
-      try {
-        const raw = localStorage.getItem(NOTES_STORAGE_KEY);
-        if (!raw) return {};
-        return JSON.parse(raw);
-      } catch {
-        return {};
-      }
+  let previousThemeForPresentation = null;
+  let gameActive = false;
+  let gameTargetElement = null;
+  let gameScore = 0;
+  let gameAttemptsThisRound = 0;
+  let gameFirstClickStreak = 0;
+  let gameLastClickWasFirstCorrect = false;
+  let gameDurationMinutes = 10;
+  let gameTimeRemaining = 0;
+  let clickTimeRemaining = CLICK_TIME_LIMIT_SECONDS;
+  let gameTimerInterval = null;
+  let clickTimerInterval = null;
+
+  function loadAllNotes() {
+    try {
+      const raw = localStorage.getItem(NOTES_STORAGE_KEY);
+      if (!raw) return {};
+      return JSON.parse(raw);
+    } catch {
+      return {};
     }
+  }
 
-    function saveAllNotes(notes) {
-      try {
-        localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(notes));
-      } catch {}
+  function saveAllNotes(notes) {
+    try {
+      localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(notes));
+    } catch {}
+  }
+
+  function loadLeaderboard() {
+    try {
+      const raw = localStorage.getItem(GAME_LEADERBOARD_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
     }
+  }
 
-    function attachLookupData(lookup) {
-      // Assume periodic-table-lookup.json keyed by symbol: { "H": {...}, "He": {...}, ... }
-      elements.forEach(el => {
-        const key = el.s;
-        if (lookup[key]) {
-          el.lookup = lookup[key];
-        }
-      });
-    }
+  function saveLeaderboard(entries) {
+    try {
+      localStorage.setItem(GAME_LEADERBOARD_KEY, JSON.stringify(entries));
+    } catch {}
+  }
 
-    function renderLegend() {
-      Object.entries(legendLabels).forEach(([key, label]) => {
-        const item = document.createElement('div');
-        item.className = 'legend-item';
-        item.innerHTML = `<span class="swatch ${key}" aria-hidden="true"></span><span>${label}</span>`;
-        legend.appendChild(item);
-      });
-    }
-
-    function renderGrid() {
-      const map = new Map(elements.map(el => [`${el.x}-${el.y}`, el]));
-      for (let row = 1; row <= 9; row++) {
-        for (let col = 1; col <= 18; col++) {
-          const el = map.get(`${col}-${row}`);
-          const cell = document.createElement('article');
-          if (!el) {
-            cell.className = 'element placeholder';
-            cell.setAttribute('aria-hidden', 'true');
-          } else {
-            cell.className = `element ${el.group}`;
-            cell.dataset.name = el.name.toLowerCase();
-            cell.dataset.symbol = el.s.toLowerCase();
-            cell.dataset.number = String(el.n);
-            cell.innerHTML = `
-              <div class="number">${el.n}</div>
-              <div class="symbol">${el.s}</div>
-              <div class="name">${el.name}</div>
-              <div class="mass">${el.mass}</div>
-            `;
-            cell.title = `${el.name} (${el.s})`;
-          }
-          grid.appendChild(cell);
-        }
-      }
-    }
-
-    function filterGrid() {
-      const q = search.value.trim().toLowerCase();
-      const tiles = [...grid.querySelectorAll('.element:not(.placeholder)')];
-      tiles.forEach(tile => {
-        const match = !q || tile.dataset.name.includes(q) || tile.dataset.symbol.includes(q) || tile.dataset.number === q;
-        tile.classList.toggle('hidden', !match);
-      });
-    }
-
-    function setTheme(theme) {
-      root.setAttribute('data-theme', theme);
-      themeToggle.setAttribute('aria-label', `Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`);
-      themeToggle.innerHTML = theme === 'dark'
-        ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
-        : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
-    }
-
-    function setGroupModeDisplay(mode) {
-      if (!groupRow) return;
-      const cells = groupRow.querySelectorAll('.group-cell');
-      cells.forEach(cell => {
-        const iupac = cell.dataset.iupac;
-        const us = cell.dataset.us;
-        if (mode === 'iupac') {
-          cell.innerHTML = `${iupac}`;
-        } else if (mode === 'us') {
-          cell.innerHTML = `${us}`;
-        } else {
-          cell.innerHTML = `${iupac}<br><span>${us}</span>`;
-        }
-      });
-    }
-
-    function getGroupNumberFromAtomicNumber(n) {
-      const map = {
-        1: 1, 3: 1, 11: 1, 19: 1, 37: 1, 55: 1, 87: 1,
-        2: 2, 4: 2, 12: 2, 20: 2, 38: 2, 56: 2, 88: 2,
-        5: 13, 13: 13, 31: 13, 49: 13, 81: 13, 113: 13,
-        6: 14, 14: 14, 32: 14, 50: 14, 82: 14, 114: 14,
-        7: 15, 15: 15, 33: 15, 51: 15, 83: 15, 115: 15,
-        8: 16, 16: 16, 34: 16, 52: 16, 84: 16, 116: 16,
-        9: 17, 17: 17, 35: 17, 53: 17, 85: 17, 117: 17,
-        10: 18, 18: 18, 36: 18, 54: 18, 86: 18, 118: 18,
-        21: 3, 39: 3, 57: 3, 71: 3, 89: 3, 103: 3,
-        22: 4, 40: 4, 72: 4, 104: 4,
-        23: 5, 41: 5, 73: 5, 105: 5,
-        24: 6, 42: 6, 74: 6, 106: 6,
-        25: 7, 43: 7, 75: 7, 107: 7,
-        26: 8, 44: 8, 76: 8, 108: 8,
-        27: 9, 45: 9, 77: 9, 109: 9,
-        28: 10, 46: 10, 78: 10, 110: 10,
-        29: 11, 47: 11, 79: 11, 111: 11,
-        30: 12, 48: 12, 80: 12, 112: 12,
-        58: 3, 59: 3, 60: 3, 61: 3, 62: 3, 63: 3, 64: 3,
-        65: 3, 66: 3, 67: 3, 68: 3, 69: 3, 70: 3,
-        90: 3, 91: 3, 92: 3, 93: 3, 94: 3, 95: 3, 96: 3,
-        97: 3, 98: 3, 99: 3, 100: 3, 101: 3, 102: 3
-      };
-      return map[n] || null;
-    }
-
-    function getPeriodFromPosition(x, y) {
-      if (y <= 7) return y;
-      if (y === 8) return 6;
-      if (y === 9) return 7;
+  function loadLastGameScore() {
+    try {
+      const raw = localStorage.getItem(GAME_LAST_SCORE_KEY);
+      return raw == null ? null : JSON.parse(raw);
+    } catch {
       return null;
     }
+  }
 
-    function clearGroupHighlight() {
-      const tiles = [...grid.querySelectorAll('.element:not(.placeholder)')];
-      tiles.forEach(t => t.classList.remove('same-group', 'dimmed'));
-    }
+  function saveLastGameScore(entry) {
+    try {
+      localStorage.setItem(GAME_LAST_SCORE_KEY, JSON.stringify(entry));
+    } catch {}
+  }
 
-    function applyGroupHighlight(groupNumber) {
-      const tiles = [...grid.querySelectorAll('.element:not(.placeholder)')];
-      tiles.forEach(t => {
-        const n = parseInt(t.dataset.number, 10);
-        const g = getGroupNumberFromAtomicNumber(n);
-        if (g === groupNumber) {
-          t.classList.add('same-group');
-          t.classList.remove('dimmed');
+  function attachLookupData(lookup) {
+    elements.forEach(el => {
+      const key = el.s;
+      if (lookup[key]) el.lookup = lookup[key];
+    });
+  }
+
+  function renderLegend() {
+    legend.innerHTML = '';
+    Object.entries(legendLabels).forEach(([key, label]) => {
+      const item = document.createElement('div');
+      item.className = 'legend-item';
+      item.innerHTML = `<span class="swatch ${key}" aria-hidden="true"></span><span>${label}</span>`;
+      legend.appendChild(item);
+    });
+  }
+
+  function renderGrid() {
+    grid.innerHTML = '';
+    const map = new Map(elements.map(el => [`${el.x}-${el.y}`, el]));
+    for (let row = 1; row <= 9; row++) {
+      for (let col = 1; col <= 18; col++) {
+        const el = map.get(`${col}-${row}`);
+        const cell = document.createElement('article');
+        if (!el) {
+          cell.className = 'element placeholder';
+          cell.setAttribute('aria-hidden', 'true');
         } else {
-          t.classList.remove('same-group');
-          t.classList.add('dimmed');
+          cell.className = `element ${el.group}`;
+          cell.dataset.name = el.name.toLowerCase();
+          cell.dataset.symbol = el.s.toLowerCase();
+          cell.dataset.number = String(el.n);
+          cell.innerHTML = `
+            <div class="number">${el.n}</div>
+            <div class="symbol">${el.s}</div>
+            <div class="name">${el.name}</div>
+            <div class="mass">${el.mass}</div>
+          `;
+          cell.title = `${el.name} (${el.s})`;
         }
-      });
-    }
-
-    function handleGroupClick(e) {
-      const cell = e.target.closest('.group-cell');
-      if (!cell) return;
-      const current = cell.getAttribute('data-active') === 'true';
-      const allCells = groupRow.querySelectorAll('.group-cell');
-      allCells.forEach(c => c.removeAttribute('data-active'));
-      if (current) {
-        clearGroupHighlight();
-        return;
-      }
-      cell.setAttribute('data-active', 'true');
-      const groupNumber = parseInt(cell.dataset.iupac, 10);
-      applyGroupHighlight(groupNumber);
-    }
-
-    function iupacToUS(groupNumber) {
-      const table = {
-        1: 'IA', 2: 'IIA', 3: 'IIIB', 4: 'IVB', 5: 'VB',
-        6: 'VIB', 7: 'VIIB', 8: 'VIIIB', 9: 'VIIIB', 10: 'VIIIB',
-        11: 'IB', 12: 'IIB', 13: 'IIIA', 14: 'IVA', 15: 'VA',
-        16: 'VIA', 17: 'VIIA', 18: 'VIIIA'
-      };
-      return table[groupNumber] || '';
-    }
-
-    function formatGroupLabel(groupNumber) {
-      if (!groupNumber) return '—';
-      const us = iupacToUS(groupNumber);
-      const mode = groupMode ? groupMode.value : 'both';
-      if (mode === 'iupac') return `Group ${groupNumber}`;
-      if (mode === 'us') return `Group ${us}`;
-      return `Group ${groupNumber} (${us})`;
-    }
-
-    function parseOxidationStates(raw) {
-      if (!raw) return [];
-      if (Array.isArray(raw)) return raw;
-      if (typeof raw !== 'string') return [];
-      return raw.split(',').map(s => s.trim()).filter(Boolean);
-    }
-
-    function exportNotesToFile() {
-      const notes = loadAllNotes();
-      const json = JSON.stringify(notes, null, 2);
-      const blob = new Blob([json], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      const timestamp = new Date().toISOString().slice(0, 10);
-      link.href = url;
-      link.download = `periodic-table-notes-${timestamp}.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    }
-
-    function importNotesFromFile(file, onDone) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        try {
-          const parsed = JSON.parse(reader.result);
-          if (typeof parsed !== 'object' || parsed === null) {
-            throw new Error('Invalid format');
-          }
-          const current = loadAllNotes();
-          const merged = { ...current, ...parsed };
-          saveAllNotes(merged);
-          if (typeof onDone === 'function') onDone(merged);
-        } catch (e) {
-          alert('Could not import notes: invalid JSON file.');
-        }
-      };
-      reader.readAsText(file);
-    }
-
-    // ── Game state ──────────────────────────────────────────────────────────────
-
-    let gameActive            = false;
-    let gameTargetElement     = null;
-    let gameScore             = 0;
-    let gameAttemptsThisRound = 0;
-    let gameFirstClickStreak  = 0;
-    let gameLevel             = 'beginner';   // beginner | experienced | advanced | challenge
-
-    // Elements in each level pool
-    function getGamePool(level) {
-      switch (level) {
-        case 'beginner':
-          // Elements 1–36 only
-          return elements.filter(e => e.n >= 1 && e.n <= 36);
-
-        case 'experienced':
-          // All elements except lanthanides (57–71) and actinides (89–103)
-          return elements.filter(e => {
-            const isInnerTransition =
-              (e.n >= 57 && e.n <= 71) ||   // lanthanides
-              (e.n >= 89 && e.n <= 103);     // actinides
-            return !isInnerTransition;
-          });
-
-        case 'advanced':
-        case 'challenge':
-        default:
-          // All 118 elements
-          return [...elements];
+        grid.appendChild(cell);
       }
     }
+  }
 
-    function clearGameTileStyles() {
-      grid.querySelectorAll('.element:not(.placeholder)').forEach(t => {
-        t.classList.remove('game-target', 'game-correct', 'game-wrong');
-      });
-    }
+  function filterGrid() {
+    const q = search.value.trim().toLowerCase();
+    const tiles = [...grid.querySelectorAll('.element:not(.placeholder)')];
+    tiles.forEach(tile => {
+      const match = !q || tile.dataset.name.includes(q) || tile.dataset.symbol.includes(q) || tile.dataset.number === q;
+      tile.classList.toggle('hidden', !match);
+    });
+  }
 
-    function setChallengeModeVisuals(on) {
-      if (on) {
-        appRoot.classList.add('game-challenge-mode');
+  function setTheme(theme) {
+    root.setAttribute('data-theme', theme);
+    themeToggle.setAttribute('aria-label', `Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`);
+    themeToggle.innerHTML = theme === 'dark'
+      ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
+      : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  }
+
+  function setGroupModeDisplay(mode) {
+    if (!groupRow) return;
+    const cells = groupRow.querySelectorAll('.group-cell');
+    cells.forEach(cell => {
+      const iupac = cell.dataset.iupac;
+      const us = cell.dataset.us;
+      if (mode === 'iupac') cell.innerHTML = `${iupac}`;
+      else if (mode === 'us') cell.innerHTML = `${us}`;
+      else cell.innerHTML = `${iupac}<br><span>${us}</span>`;
+    });
+  }
+
+  function getGroupNumberFromAtomicNumber(n) {
+    const map = {
+      1: 1, 3: 1, 11: 1, 19: 1, 37: 1, 55: 1, 87: 1,
+      2: 2, 4: 2, 12: 2, 20: 2, 38: 2, 56: 2, 88: 2,
+      5: 13, 13: 13, 31: 13, 49: 13, 81: 13, 113: 13,
+      6: 14, 14: 14, 32: 14, 50: 14, 82: 14, 114: 14,
+      7: 15, 15: 15, 33: 15, 51: 15, 83: 15, 115: 15,
+      8: 16, 16: 16, 34: 16, 52: 16, 84: 16, 116: 16,
+      9: 17, 17: 17, 35: 17, 53: 17, 85: 17, 117: 17,
+      10: 18, 18: 18, 36: 18, 54: 18, 86: 18, 118: 18,
+      21: 3, 39: 3, 57: 3, 71: 3, 89: 3, 103: 3,
+      22: 4, 40: 4, 72: 4, 104: 4,
+      23: 5, 41: 5, 73: 5, 105: 5,
+      24: 6, 42: 6, 74: 6, 106: 6,
+      25: 7, 43: 7, 75: 7, 107: 7,
+      26: 8, 44: 8, 76: 8, 108: 8,
+      27: 9, 45: 9, 77: 9, 109: 9,
+      28: 10, 46: 10, 78: 10, 110: 10,
+      29: 11, 47: 11, 79: 11, 111: 11,
+      30: 12, 48: 12, 80: 12, 112: 12,
+      58: 3, 59: 3, 60: 3, 61: 3, 62: 3, 63: 3, 64: 3,
+      65: 3, 66: 3, 67: 3, 68: 3, 69: 3, 70: 3,
+      90: 3, 91: 3, 92: 3, 93: 3, 94: 3, 95: 3, 96: 3,
+      97: 3, 98: 3, 99: 3, 100: 3, 101: 3, 102: 3
+    };
+    return map[n] || null;
+  }
+
+  function getPeriodFromPosition(x, y) {
+    if (y <= 7) return y;
+    if (y === 8) return 6;
+    if (y === 9) return 7;
+    return null;
+  }
+
+  function clearGroupHighlight() {
+    [...grid.querySelectorAll('.element:not(.placeholder)')].forEach(t => t.classList.remove('same-group', 'dimmed'));
+  }
+
+  function applyGroupHighlight(groupNumber) {
+    [...grid.querySelectorAll('.element:not(.placeholder)')].forEach(t => {
+      const n = parseInt(t.dataset.number, 10);
+      const g = getGroupNumberFromAtomicNumber(n);
+      if (g === groupNumber) {
+        t.classList.add('same-group');
+        t.classList.remove('dimmed');
       } else {
-        appRoot.classList.remove('game-challenge-mode');
+        t.classList.remove('same-group');
+        t.classList.add('dimmed');
       }
+    });
+  }
+
+  function handleGroupClick(e) {
+    const cell = e.target.closest('.group-cell');
+    if (!cell) return;
+    const current = cell.getAttribute('data-active') === 'true';
+    groupRow.querySelectorAll('.group-cell').forEach(c => c.removeAttribute('data-active'));
+    if (current) {
+      clearGroupHighlight();
+      return;
     }
+    cell.setAttribute('data-active', 'true');
+    applyGroupHighlight(parseInt(cell.dataset.iupac, 10));
+  }
 
-    function updateGameHUD(message) {
-      if (gameTargetNameEl)
-        gameTargetNameEl.textContent =
-          gameActive && gameTargetElement ? gameTargetElement.name : '—';
-      if (gameScoreEl)    gameScoreEl.textContent    = String(gameScore);
-      if (gameAttemptsEl) gameAttemptsEl.textContent = `${gameAttemptsThisRound} / 3`;
-      if (gameStreakEl)   gameStreakEl.textContent    = String(gameFirstClickStreak);
-      if (gameMessageEl)  gameMessageEl.textContent  = message != null ? message : '';
-    }
+  function iupacToUS(groupNumber) {
+    const table = {
+      1: 'IA', 2: 'IIA', 3: 'IIIB', 4: 'IVB', 5: 'VB', 6: 'VIB', 7: 'VIIB',
+      8: 'VIIIB', 9: 'VIIIB', 10: 'VIIIB', 11: 'IB', 12: 'IIB',
+      13: 'IIIA', 14: 'IVA', 15: 'VA', 16: 'VIA', 17: 'VIIA', 18: 'VIIIA'
+    };
+    return table[groupNumber] || '';
+  }
 
-    function updateLevelDisplay() {
-      const labels = {
-        beginner:     'Beginner (1–36)',
-        experienced:  'Experienced',
-        advanced:     'Advanced',
-        challenge:    'Challenge'
-      };
-      if (gameLevelDisplay) gameLevelDisplay.textContent = labels[gameLevel] || '—';
+  function formatGroupLabel(groupNumber) {
+    if (!groupNumber) return '—';
+    const us = iupacToUS(groupNumber);
+    const mode = groupMode ? groupMode.value : 'both';
+    if (mode === 'iupac') return `Group ${groupNumber}`;
+    if (mode === 'us') return `Group ${us}`;
+    return `Group ${groupNumber} (${us})`;
+  }
 
-      // Highlight active level button
-      document.querySelectorAll('.game-level-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.level === gameLevel);
-      });
-    }
+  function exportNotesToFile() {
+    const notes = loadAllNotes();
+    const blob = new Blob([JSON.stringify(notes, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `periodic-table-notes-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
 
-    function pickRandomElement() {
-      const pool = getGamePool(gameLevel);
-      if (!pool.length) return null;
-      return pool[Math.floor(Math.random() * pool.length)];
-    }
-
-    function startNewRound(message) {
-      gameTargetElement     = pickRandomElement();
-      gameAttemptsThisRound = 0;
-      clearGameTileStyles();
-      updateGameHUD(message != null ? message : '');
-    }
-
-    function resetGameState() {
-      gameActive            = false;
-      gameScore             = 0;
-      gameAttemptsThisRound = 0;
-      gameFirstClickStreak  = 0;
-      gameTargetElement     = null;
-      setChallengeModeVisuals(false);
-      clearGameTileStyles();
-      updateLevelDisplay();
-      updateGameHUD('Select a level then press "Start / New game".');
-    }
-
-    function handleGameClick(tile) {
-      if (!gameActive || !gameTargetElement) return;
-
-      const clickedNumber = parseInt(tile.dataset.number, 10);
-
-      // In non-challenge levels, ignore clicks on tiles outside the pool
-      if (gameLevel !== 'advanced' && gameLevel !== 'challenge') {
-        const pool = getGamePool(gameLevel);
-        const inPool = pool.some(e => e.n === clickedNumber);
-        if (!inPool) return;
+  function importNotesFromFile(file, onDone) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(reader.result);
+        if (typeof parsed !== 'object' || parsed === null) throw new Error('Invalid format');
+        const merged = { ...loadAllNotes(), ...parsed };
+        saveAllNotes(merged);
+        if (typeof onDone === 'function') onDone(merged);
+      } catch {
+        alert('Could not import notes: invalid JSON file.');
       }
+    };
+    reader.readAsText(file);
+  }
 
-      const isCorrect = clickedNumber === gameTargetElement.n;
+  function clearGameTileStyles() {
+    [...grid.querySelectorAll('.element:not(.placeholder)')].forEach(tile => {
+      tile.classList.remove('game-target', 'game-correct', 'game-wrong');
+    });
+  }
 
-      if (gameAttemptsThisRound < 3) gameAttemptsThisRound += 1;
+  function formatClock(totalSeconds) {
+    const safe = Math.max(0, totalSeconds);
+    const minutes = Math.floor(safe / 60);
+    const seconds = safe % 60;
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  }
 
-      clearGameTileStyles();
-
-      if (isCorrect) {
-        tile.classList.add('game-correct');
-
-        let points = 0;
-        if (gameAttemptsThisRound === 1) {
-          points = 5;
-          gameFirstClickStreak += 1;
-        } else if (gameAttemptsThisRound === 2) {
-          points = 3;
-          gameFirstClickStreak = 0;
-        } else {
-          points = 1;
-          gameFirstClickStreak = 0;
-        }
-        gameScore += points;
-
-        let message;
-        if (gameAttemptsThisRound === 1
-            && gameFirstClickStreak > 0
-            && gameFirstClickStreak % 10 === 0) {
-          gameScore += 100;
-          message = `Correct on first click! +${points} pts `
-                  + `+100 bonus for ${gameFirstClickStreak} in a row!`;
-        } else {
-          message = `Correct! +${points} pts.`
-                  + (gameFirstClickStreak > 1
-                      ? `  Streak: ${gameFirstClickStreak}` : '');
-        }
-
-        startNewRound(message);
-
-      } else {
-        tile.classList.add('game-wrong');
-        gameFirstClickStreak = 0;
-
-                if (gameAttemptsThisRound >= 3) {
-          // Reveal the correct tile
-          const correctTile = grid.querySelector(
-            `.element[data-number="${gameTargetElement.n}"]`
-          );
-          if (correctTile) correctTile.classList.add('game-target');
-
-          const answeredName = gameTargetElement.name;
-
-          // Update HUD immediately so the student sees the reveal message
-          const revealMsg = `Incorrect. The answer was ${answeredName}. Moving on…`;
-          updateGameHUD(revealMsg);
-
-          // After a short pause, pick a NEW element and continue
-          setTimeout(() => {
-            gameAttemptsThisRound = 0;
-            startNewRound(`New element after 3 failed attempts on ${answeredName}.`);
-          }, 1400);
-        } else {
-          updateGameHUD(
-            `Incorrect. Try again (attempt ${gameAttemptsThisRound} of 3).`
-          );
-        }
-      }
+  function renderLeaderboard() {
+    const entries = loadLeaderboard();
+    if (!leaderboardBodyEl || !leaderboardTableEl || !leaderboardEmptyEl) return;
+    leaderboardBodyEl.innerHTML = '';
+    if (!entries.length) {
+      leaderboardEmptyEl.style.display = 'block';
+      leaderboardTableEl.style.display = 'none';
+      return;
     }
-
-    // ── Element info panel ──────────────────────────────────────────────────────
-
-    function showElementInfo(tile) {
-      const number    = parseInt(tile.dataset.number, 10);
-      const name      = tile.dataset.name || '';
-      const rawSymbol = tile.dataset.symbol || '';
-      const symbol    = rawSymbol.charAt(0).toUpperCase() + rawSymbol.slice(1).toLowerCase();
-      const mass      = tile.querySelector('.mass')?.textContent || '';
-      const elData    = elements.find(e => e.n === number) || {};
-      const lookup    = elData.lookup || {};
-
-      const groupNumber = getGroupNumberFromAtomicNumber(number);
-      const period      = getPeriodFromPosition(elData.x, elData.y) || lookup.period || null;
-      const groupLabel  = formatGroupLabel(groupNumber);
-
-      const fp = elData.freezing_point_K ?? lookup.melt   ?? null;
-      const bp = elData.boiling_point_K  ?? lookup.boil   ?? null;
-
-      const isGas      = lookup.phase && lookup.phase.toLowerCase() === 'gas';
-      const density_cm3 = elData.density_g_per_cm3 ?? (!isGas ? lookup.density : null);
-      const density_L   = elData.density_g_per_L   ?? ( isGas ? lookup.density : null);
-
-      const ie1 = elData.first_ionization_energy ??
-        (Array.isArray(lookup.ionization_energies) ? lookup.ionization_energies[0] : null);
-      const ea  = elData.electron_affinity ?? lookup.electron_affinity ?? null;
-
-      const rawOx = elData.oxidation_states || lookup.oxidation_states || null;
-      const oxArr = parseOxidationStates(rawOx);
-      const oxStr = oxArr.length ? oxArr.join(', ') : '—';
-
-      const phase          = elData.phase_25C ||
-                             (lookup.phase ? lookup.phase.toLowerCase() : 'unknown');
-      const appearance     = lookup.appearance              || '';
-      const category       = lookup.category               || '';
-      const electronegativity = lookup.electronegativity_pauling ?? null;
-      const molarHeat      = lookup.molar_heat              ?? null;
-      const shells         = lookup.shells                  || [];
-      const discoveredBy   = lookup.discovered_by           || '';
-      const namedBy        = lookup.named_by                || '';
-      const summaryText    = lookup.summary                 || '—';
-
-      function fmt(val, digits = 2) {
-        if (val == null || Number.isNaN(Number(val))) return '—';
-        return Number(val).toFixed(digits);
-      }
-
-      const fpStr     = fp  != null ? `${fmt(fp,  2)} K`               : '—';
-      const bpStr     = bp  != null ? `${fmt(bp,  2)} K`               : '—';
-      const ieStr     = ie1 != null ? `${fmt(ie1, 1)} kJ/mol`          : '—';
-      const eaStr     = ea  != null ? `${fmt(ea,  1)} kJ/mol`          : '—';
-      const enStr     = electronegativity != null ? fmt(electronegativity, 2) : '—';
-      const mhStr     = molarHeat != null ? `${fmt(molarHeat, 2)} J/(mol·K)` : '—';
-      const shellsStr = shells.length ? shells.join(', ')               : '—';
-      const phaseStr  = phase ? phase.charAt(0).toUpperCase() + phase.slice(1) : 'Unknown';
-      const catStr    = category ? category.replace(/_/g, ' ')          : '—';
-
-      let densityStr = '—';
-      if      (density_cm3 != null) densityStr = `${density_cm3} g/cm³`;
-      else if (density_L   != null) densityStr = `${density_L} g/L`;
-
-      infoContent.innerHTML = `
-        <div style="display:flex;flex-wrap:wrap;gap:0.75rem;align-items:flex-end;">
-          <div>
-            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Atomic number</div>
-            <div style="font-size:1.1rem;font-weight:600;">${number}</div>
-          </div>
-          <div>
-            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Symbol</div>
-            <div style="font-size:1.4rem;font-weight:700;">${symbol}</div>
-          </div>
-          <div>
-            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Name</div>
-            <div style="font-size:1.05rem;font-weight:500;">${name}</div>
-          </div>
-          <div>
-            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Average mass</div>
-            <div>${mass}</div>
-          </div>
-        </div>
-
-        <div style="margin-top:0.75rem;display:flex;flex-wrap:wrap;gap:1.25rem;">
-          <div>
-            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Group</div>
-            <div>${groupLabel}</div>
-          </div>
-          <div>
-            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Period</div>
-            <div>${period ?? '—'}</div>
-          </div>
-          <div>
-            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Phase at 25 °C</div>
-            <div>${phaseStr}</div>
-          </div>
-          <div>
-            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Category</div>
-            <div>${catStr}</div>
-          </div>
-        </div>
-
-        <div style="margin-top:0.75rem;display:grid;
-                    grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:0.75rem;">
-          <div>
-            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Freezing point</div>
-            <div>${fpStr}</div>
-          </div>
-          <div>
-            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Boiling point</div>
-            <div>${bpStr}</div>
-          </div>
-          <div>
-            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Density</div>
-            <div>${densityStr}</div>
-          </div>
-          <div>
-            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">1st ionization energy</div>
-            <div>${ieStr}</div>
-          </div>
-          <div>
-            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Electron affinity</div>
-            <div>${eaStr}</div>
-          </div>
-          <div>
-            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Oxidation states</div>
-            <div>${oxStr}</div>
-          </div>
-          <div>
-            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Electronegativity (Pauling)</div>
-            <div>${enStr}</div>
-          </div>
-          <div>
-            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Molar heat</div>
-            <div>${mhStr}</div>
-          </div>
-          <div>
-            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Electron shells</div>
-            <div>${shellsStr}</div>
-          </div>
-        </div>
-
-        <div style="margin-top:0.75rem;display:grid;
-                    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0.75rem;">
-          <div>
-            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Appearance</div>
-            <div>${appearance || '—'}</div>
-          </div>
-          <div>
-            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Discovered by</div>
-            <div>${discoveredBy || '—'}</div>
-          </div>
-          <div>
-            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Named by</div>
-            <div>${namedBy || '—'}</div>
-          </div>
-        </div>
-
-        <div style="margin-top:0.75rem;">
-          <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">Summary</div>
-          <p class="element-summary">${summaryText}</p>
-          <div style="margin-top:0.5rem;font-size:0.75rem;color:var(--color-text-muted);">
-            Temperatures in K; density in g/cm³ (solids/liquids) or g/L (gases); energies in kJ/mol.
-          </div>
-        </div>
-
-        <div style="margin-top:1rem;">
-          <div style="display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;
-                      justify-content:space-between;margin-bottom:0.35rem;">
-            <span style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;">
-              Notes for this element (local to this browser)
-            </span>
-            <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
-              <button type="button" id="exportNotesBtn" class="btn"
-                      style="padding:0.25rem 0.6rem;font-size:0.75rem;">
-                Export all notes
-              </button>
-              abel for="importNotesInput" class="btn"
-                     style="padding:0.25rem 0.6rem;font-size:0.75rem;cursor:pointer;">
-                Import notes
-              </label>
-              <input id="importNotesInput" type="file" accept="application/json"
-                     style="display:none;">
-              <button type="button" id="clearNotesBtn" class="btn"
-                      style="padding:0.25rem 0.6rem;font-size:0.75rem;">
-                Clear this element
-              </button>
-            </div>
-          </div>
-          <textarea id="elementNotes" rows="4"
-                    style="width:100%;padding:0.5rem;border-radius:0.5rem;
-                           border:1px solid var(--color-border);
-                           background:var(--color-surface-2);
-                           font:inherit;resize:vertical;"></textarea>
-        </div>
+    leaderboardEmptyEl.style.display = 'none';
+    leaderboardTableEl.style.display = 'table';
+    entries.slice(0, 10).forEach((entry, index) => {
+      const tr = document.createElement('tr');
+      tr.style.borderBottom = '1px solid var(--color-divider)';
+      tr.innerHTML = `
+        <td style="padding:0.5rem;">${index + 1}</td>
+        <td style="padding:0.5rem; font-weight:600;">${entry.score}</td>
+        <td style="padding:0.5rem;">${entry.date}</td>
+        <td style="padding:0.5rem;">${entry.time}</td>
+        <td style="padding:0.5rem;">${entry.durationMinutes} min</td>
       `;
+      leaderboardBodyEl.appendChild(tr);
+    });
+  }
 
-      infoPanel.style.display = 'block';
+  function renderLastGameScore() {
+    const last = loadLastGameScore();
+    if (lastGameScoreEl) lastGameScoreEl.textContent = last ? `${last.score}` : '—';
+  }
 
-      const notes       = loadAllNotes();
-      const notesArea   = document.getElementById('elementNotes');
-      const clearBtn    = document.getElementById('clearNotesBtn');
-      const exportBtn   = document.getElementById('exportNotesBtn');
-      const importInput = document.getElementById('importNotesInput');
+  function stopGameTimers() {
+    if (gameTimerInterval) clearInterval(gameTimerInterval);
+    if (clickTimerInterval) clearInterval(clickTimerInterval);
+    gameTimerInterval = null;
+    clickTimerInterval = null;
+  }
 
-      if (notesArea) {
-        notesArea.value = notes[number] || '';
-        notesArea.addEventListener('input', () => {
-          const all = loadAllNotes();
-          all[number] = notesArea.value;
-          saveAllNotes(all);
+  function updateTimerDisplays() {
+    if (gameTimeLeftEl) gameTimeLeftEl.textContent = gameActive ? formatClock(gameTimeRemaining) : '—';
+    if (clickTimeLeftEl) clickTimeLeftEl.textContent = gameActive ? `${clickTimeRemaining}s` : '30s';
+  }
+
+  function updateGameHUD(message = '') {
+    if (gameTargetNameEl) gameTargetNameEl.textContent = gameTargetElement ? gameTargetElement.name : '—';
+    if (gameScoreEl) gameScoreEl.textContent = String(gameScore);
+    if (gameAttemptsEl) gameAttemptsEl.textContent = `${gameAttemptsThisRound} / 3`;
+    if (gameStreakEl) gameStreakEl.textContent = String(gameFirstClickStreak);
+    if (gameMessageEl) gameMessageEl.textContent = message;
+  }
+
+  function pickRandomElement() {
+    const pool = elements.filter(e => e && typeof e.name === 'string');
+    return pool.length ? pool[Math.floor(Math.random() * pool.length)] : null;
+  }
+
+  function startClickTimer() {
+    if (clickTimerInterval) clearInterval(clickTimerInterval);
+    clickTimeRemaining = CLICK_TIME_LIMIT_SECONDS;
+    updateTimerDisplays();
+    clickTimerInterval = setInterval(() => {
+      if (!gameActive) return;
+      clickTimeRemaining -= 1;
+      updateTimerDisplays();
+      if (clickTimeRemaining <= 0) {
+        clearInterval(clickTimerInterval);
+        clickTimerInterval = null;
+        handleClickTimeout();
+      }
+    }, 1000);
+  }
+
+  function startGameTimer() {
+    if (gameTimerInterval) clearInterval(gameTimerInterval);
+    gameTimeRemaining = gameDurationMinutes * 60;
+    updateTimerDisplays();
+    gameTimerInterval = setInterval(() => {
+      if (!gameActive) return;
+      gameTimeRemaining -= 1;
+      updateTimerDisplays();
+      if (gameTimeRemaining <= 0) endGame('Time is up. Game over.');
+    }, 1000);
+  }
+
+  function recordFinishedGame() {
+    const now = new Date();
+    const entry = {
+      score: gameScore,
+      durationMinutes: gameDurationMinutes,
+      date: now.toLocaleDateString(),
+      time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      timestamp: now.toISOString()
+    };
+    saveLastGameScore(entry);
+    const leaderboard = loadLeaderboard();
+    leaderboard.push(entry);
+    leaderboard.sort((a, b) => (b.score !== a.score ? b.score - a.score : new Date(b.timestamp) - new Date(a.timestamp)));
+    saveLeaderboard(leaderboard.slice(0, 10));
+    renderLastGameScore();
+    renderLeaderboard();
+  }
+
+  function endGame(finalMessage = 'Game over.') {
+    stopGameTimers();
+    gameActive = false;
+    clearGameTileStyles();
+    recordFinishedGame();
+    updateGameHUD(finalMessage);
+    updateTimerDisplays();
+  }
+
+  function startNewRound(message = '') {
+    gameTargetElement = pickRandomElement();
+    gameAttemptsThisRound = 0;
+    gameLastClickWasFirstCorrect = false;
+    clearGameTileStyles();
+    updateGameHUD(message);
+    if (gameActive) startClickTimer();
+  }
+
+  function handleClickTimeout() {
+    if (!gameActive) return;
+    gameFirstClickStreak = 0;
+    gameAttemptsThisRound = Math.min(gameAttemptsThisRound + 1, 3);
+    if (gameAttemptsThisRound >= 3) {
+      startNewRound('Time ran out for the third attempt. New element given.');
+    } else {
+      updateGameHUD(`Time ran out. Try again (${gameAttemptsThisRound} / 3).`);
+      updateTimerDisplays();
+      startClickTimer();
+    }
+  }
+
+  function resetGameState() {
+    stopGameTimers();
+    gameActive = false;
+    gameScore = 0;
+    gameAttemptsThisRound = 0;
+    gameFirstClickStreak = 0;
+    gameTargetElement = null;
+    gameLastClickWasFirstCorrect = false;
+    clearGameTileStyles();
+    updateGameHUD('Press "Start / New game" to begin.');
+    updateTimerDisplays();
+  }
+
+  function handleGameClick(tile) {
+    if (!gameActive || !gameTargetElement) return;
+    const clickedNumber = parseInt(tile.dataset.number, 10);
+    const isCorrect = clickedNumber === gameTargetElement.n;
+    gameAttemptsThisRound = Math.min(gameAttemptsThisRound + 1, 3);
+    clearGameTileStyles();
+    tile.classList.add(isCorrect ? 'game-correct' : 'game-wrong');
+    let message = '';
+
+    if (isCorrect) {
+      let points = 0;
+      if (gameAttemptsThisRound === 1) {
+        points = 5;
+        gameFirstClickStreak += 1;
+        gameLastClickWasFirstCorrect = true;
+      } else if (gameAttemptsThisRound === 2) {
+        points = 3;
+        gameFirstClickStreak = 0;
+        gameLastClickWasFirstCorrect = false;
+      } else {
+        points = 1;
+        gameFirstClickStreak = 0;
+        gameLastClickWasFirstCorrect = false;
+      }
+      gameScore += points;
+      if (gameFirstClickStreak > 0 && gameFirstClickStreak % 10 === 0 && gameAttemptsThisRound === 1) {
+        gameScore += 100;
+        message = `Correct! +${points} pts, and +100 bonus for 10 first-click answers in a row!`;
+      } else {
+        message = `Correct! +${points} pts.`;
+      }
+      startNewRound(message);
+    } else {
+      gameFirstClickStreak = 0;
+      if (gameAttemptsThisRound >= 3) {
+        startNewRound(`Incorrect. You've used 3 attempts. New element given.`);
+      } else {
+        updateGameHUD(`Incorrect. Try again (${gameAttemptsThisRound} / 3).`);
+        startClickTimer();
+      }
+    }
+  }
+
+  function showElementInfo(tile) {
+    const number = parseInt(tile.dataset.number, 10);
+    const name = tile.dataset.name;
+    const rawSymbol = tile.dataset.symbol || '';
+    const symbol = rawSymbol.charAt(0).toUpperCase() + rawSymbol.slice(1).toLowerCase();
+    const mass = tile.querySelector('.mass')?.textContent || '';
+    const elData = elements.find(e => e.n === number) || {};
+    const lookup = elData.lookup || {};
+    const groupNumber = getGroupNumberFromAtomicNumber(number);
+    const period = elData ? getPeriodFromPosition(elData.x, elData.y) : lookup.period || null;
+    const groupLabel = formatGroupLabel(groupNumber);
+    const fp = elData.freezing_point_K ?? lookup.melt ?? null;
+    const bp = elData.boiling_point_K ?? lookup.boil ?? null;
+    const density_cm3 = elData.density_g_per_cm3 ?? (lookup.phase && lookup.phase.toLowerCase() !== 'gas' ? lookup.density : null);
+    const density_L = elData.density_g_per_L ?? (lookup.phase && lookup.phase.toLowerCase() === 'gas' ? lookup.density : null);
+    const ie1 = elData.first_ionization_energy ?? (lookup.ionization_energies ? lookup.ionization_energies[0] : null);
+    const ea = elData.electron_affinity ?? lookup.electron_affinity ?? null;
+    const ox = elData.oxidation_states || lookup.oxidation_states || [];
+    const phase = elData.phase_25C || (lookup.phase ? lookup.phase.toLowerCase() : 'unknown');
+    const appearance = lookup.appearance || '';
+    const category = lookup.category || '';
+    const electronegativity = lookup.electronegativity_pauling ?? null;
+    const molarHeat = lookup.molar_heat ?? null;
+    const shells = lookup.shells || [];
+    const discoveredBy = lookup.discovered_by || '';
+    const namedBy = lookup.named_by || '';
+    const summaryText = lookup.summary || '—';
+
+    function fmt(val, digits = 2) {
+      if (val == null || Number.isNaN(val)) return '—';
+      return Number(val).toFixed(digits);
+    }
+
+    const fpStr = fp != null ? `${fmt(fp, 2)} K` : '—';
+    const bpStr = bp != null ? `${fmt(bp, 2)} K` : '—';
+    let densityStr = '—';
+    if (density_cm3 != null) densityStr = `${density_cm3} g/cm³`;
+    else if (density_L != null) densityStr = `${density_L} g/L`;
+
+    const ieStr = ie1 != null ? `${fmt(ie1, 1)} kJ/mol` : '—';
+    const eaStr = ea != null ? `${fmt(ea, 1)} kJ/mol` : '—';
+    const oxStr = Array.isArray(ox) && ox.length ? ox.join(', ') : '—';
+    const phaseStr = phase ? phase.charAt(0).toUpperCase() + phase.slice(1) : 'Unknown';
+    const catStr = category ? category.replace(/_/g, ' ') : '—';
+    const enStr = electronegativity != null ? `${fmt(electronegativity, 2)}` : '—';
+    const mhStr = molarHeat != null ? `${fmt(molarHeat, 2)} J/(mol·K)` : '—';
+    const shellsStr = shells.length ? shells.join(', ') : '—';
+
+    infoContent.innerHTML = `
+      <div style="display:flex; flex-wrap:wrap; gap:0.75rem; align-items:flex-end;">
+        <div><div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Atomic number</div><div style="font-size:1.1rem; font-weight:600;">${number}</div></div>
+        <div><div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Symbol</div><div style="font-size:1.4rem; font-weight:700;">${symbol}</div></div>
+        <div><div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Name</div><div style="font-size:1.05rem; font-weight:500;">${name}</div></div>
+        <div><div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Average mass</div><div>${mass}</div></div>
+      </div>
+
+      <div style="margin-top:0.75rem; display:flex; flex-wrap:wrap; gap:1.25rem;">
+        <div><div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Group</div><div>${groupLabel}</div></div>
+        <div><div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Period</div><div>${period ?? '—'}</div></div>
+        <div><div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Phase at 25 °C</div><div>${phaseStr}</div></div>
+        <div><div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Category</div><div>${catStr}</div></div>
+      </div>
+
+      <div style="margin-top:0.75rem; display:grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap:0.75rem;">
+        <div><div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Freezing point</div><div>${fpStr}</div></div>
+        <div><div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Boiling point</div><div>${bpStr}</div></div>
+        <div><div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Density</div><div>${densityStr}</div></div>
+        <div><div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">1st ionization energy</div><div>${ieStr}</div></div>
+        <div><div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Electron affinity</div><div>${eaStr}</div></div>
+        <div><div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Electronegativity (Pauling)</div><div>${enStr}</div></div>
+        <div><div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Molar heat</div><div>${mhStr}</div></div>
+        <div><div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Electron shells</div><div>${shellsStr}</div></div>
+      </div>
+
+      <div style="margin-top:0.75rem; display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:0.75rem;">
+        <div><div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Appearance</div><div>${appearance || '—'}</div></div>
+        <div><div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Discovered by</div><div>${discoveredBy || '—'}</div></div>
+        <div><div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Named by</div><div>${namedBy || '—'}</div></div>
+      </div>
+
+      <div style="margin-top:0.75rem;">
+        <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Oxidation states</div>
+        <div>${oxStr}</div>
+      </div>
+
+      <div style="margin-top:0.75rem;">
+        <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Summary</div>
+        <p class="element-summary">${summaryText}</p>
+        <div style="margin-top:0.5rem; font-size:0.75rem; color:var(--color-text-muted);">
+          Temperatures in K; density in g/cm³ (solids/liquids) or g/L (gases); energies in kJ/mol.
+        </div>
+      </div>
+
+      <div style="margin-top:1rem;">
+        <div style="display:flex; flex-wrap:wrap; gap:0.5rem; align-items:center; justify-content:space-between; margin-bottom:0.35rem;">
+          <span style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Notes for this element (local to this browser)</span>
+          <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+            <button type="button" id="exportNotesBtn" class="btn" style="padding:0.25rem 0.6rem; font-size:0.75rem;">Export all notes</button>
+            <label for="importNotesInput" class="btn" style="padding:0.25rem 0.6rem; font-size:0.75rem; cursor:pointer;">Import notes</label>
+            <input id="importNotesInput" type="file" accept="application/json" style="display:none;">
+            <button type="button" id="clearNotesBtn" class="btn" style="padding:0.25rem 0.6rem; font-size:0.75rem;">Clear this element</button>
+          </div>
+        </div>
+        <textarea id="elementNotes" rows="4" style="width:100%; padding:0.5rem; border-radius:0.5rem; border:1px solid var(--color-border); background:var(--color-surface-2); font:inherit; resize:vertical;"></textarea>
+      </div>
+    `;
+
+    infoPanel.style.display = 'block';
+
+    const notes = loadAllNotes();
+    const notesArea = document.getElementById('elementNotes');
+    const clearBtn = document.getElementById('clearNotesBtn');
+    const exportBtn = document.getElementById('exportNotesBtn');
+    const importInput = document.getElementById('importNotesInput');
+
+    if (notesArea) {
+      notesArea.value = notes[number] || '';
+      notesArea.addEventListener('input', () => {
+        const all = loadAllNotes();
+        all[number] = notesArea.value;
+        saveAllNotes(all);
+      });
+    }
+
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        const all = loadAllNotes();
+        delete all[number];
+        saveAllNotes(all);
+        if (notesArea) notesArea.value = '';
+      });
+    }
+
+    if (exportBtn) exportBtn.addEventListener('click', exportNotesToFile);
+
+    if (importInput) {
+      importInput.addEventListener('change', () => {
+        const file = importInput.files && importInput.files[0];
+        if (!file) return;
+        importNotesFromFile(file, mergedNotes => {
+          if (notesArea) notesArea.value = mergedNotes[number] || '';
+          importInput.value = '';
         });
-      }
-      if (clearBtn) {
-        clearBtn.addEventListener('click', () => {
-          const all = loadAllNotes();
-          delete all[number];
-          saveAllNotes(all);
-          if (notesArea) notesArea.value = '';
-        });
-      }
-      if (exportBtn) {
-        exportBtn.addEventListener('click', exportNotesToFile);
-      }
-      if (importInput) {
-        importInput.addEventListener('change', () => {
-          const file = importInput.files && importInput.files[0];
-          if (!file) return;
-          importNotesFromFile(file, merged => {
-            if (notesArea) notesArea.value = merged[number] || '';
-            importInput.value = '';
+      });
+    }
+  }
+
+  function attachElementClickHandlers() {
+    [...grid.querySelectorAll('.element:not(.placeholder)')].forEach(tile => {
+      tile.addEventListener('click', () => {
+        showElementInfo(tile);
+        const groupNumber = getGroupNumberFromAtomicNumber(parseInt(tile.dataset.number, 10));
+        if (groupNumber) {
+          groupRow.querySelectorAll('.group-cell').forEach(c => {
+            if (parseInt(c.dataset.iupac, 10) === groupNumber) c.setAttribute('data-active', 'true');
+            else c.removeAttribute('data-active');
           });
-        });
-      }
-    }
+          applyGroupHighlight(groupNumber);
+        }
+        handleGameClick(tile);
+      });
+    });
+  }
 
-    // ── Click handlers ──────────────────────────────────────────────────────────
+  function setupSharedUIHandlers() {
+    search.addEventListener('input', filterGrid);
 
-    function attachElementClickHandlers() {
-      grid.querySelectorAll('.element:not(.placeholder)').forEach(tile => {
-        tile.addEventListener('click', () => {
-          // Always show info panel
-          showElementInfo(tile);
+    resetBtn.addEventListener('click', () => {
+      search.value = '';
+      filterGrid();
+      clearGroupHighlight();
+    });
 
-          // Group highlight
-          const groupNumber = getGroupNumberFromAtomicNumber(
-            parseInt(tile.dataset.number, 10)
-          );
-          if (groupNumber) {
-            groupRow.querySelectorAll('.group-cell').forEach(c => {
-              if (parseInt(c.dataset.iupac, 10) === groupNumber) {
-                c.setAttribute('data-active', 'true');
-              } else {
-                c.removeAttribute('data-active');
-              }
-            });
-            applyGroupHighlight(groupNumber);
-          }
+    themeToggle.addEventListener('click', () => {
+      setTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
 
-          // Game
-          handleGameClick(tile);
-        });
+    if (groupMode) {
+      groupMode.addEventListener('change', () => {
+        setGroupModeDisplay(groupMode.value);
+        const tiles = [...grid.querySelectorAll('.element.same-group')];
+        if (tiles.length && infoPanel.style.display === 'block') showElementInfo(tiles[0]);
       });
     }
 
-    // ── Initialization ──────────────────────────────────────────────────────────
+    if (groupRow) groupRow.addEventListener('click', handleGroupClick);
 
-    function initApp(lookup) {
-      if (lookup) attachLookupData(lookup);
-
-      renderLegend();
-      renderGrid();
-      attachElementClickHandlers();
-
-      setTheme(
-        window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-      );
-      setGroupModeDisplay(groupMode ? groupMode.value : 'both');
-
-      // Search
-      search.addEventListener('input', filterGrid);
-
-      // Reset button
-      resetBtn.addEventListener('click', () => {
-        search.value = '';
-        filterGrid();
-        clearGroupHighlight();
+    if (gameStartBtn) {
+      gameStartBtn.addEventListener('click', () => {
+        gameDurationMinutes = parseInt(gameDurationSelect?.value || '10', 10);
+        gameActive = true;
+        gameScore = 0;
+        gameFirstClickStreak = 0;
+        startGameTimer();
+        startNewRound('Game started. Click the correct element.');
       });
-
-      // Theme toggle
-      themeToggle.addEventListener('click', () => {
-        setTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
-      });
-
-      // Group mode dropdown
-      if (groupMode) {
-        groupMode.addEventListener('change', () => {
-          setGroupModeDisplay(groupMode.value);
-          const activeTiles = [...grid.querySelectorAll('.element.same-group')];
-          if (activeTiles.length && infoPanel.style.display === 'block') {
-            showElementInfo(activeTiles[0]);
-          }
-        });
-      }
-
-      // Group row click
-      if (groupRow) {
-        groupRow.addEventListener('click', handleGroupClick);
-      }
-
-      // ── Game controls ─────────────────────────────────────────────────────────
-
-      resetGameState();   // initialise HUD after grid exists
-
-      // Level buttons
-      document.querySelectorAll('.game-level-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          gameLevel = btn.dataset.level;
-          updateLevelDisplay();
-          // If game is already running, restart with new level
-          if (gameActive) {
-            gameScore             = 0;
-            gameFirstClickStreak  = 0;
-            gameAttemptsThisRound = 0;
-            setChallengeModeVisuals(gameLevel === 'challenge');
-            startNewRound(`Level changed to ${btn.textContent.trim()}. Game restarted.`);
-          }
-        });
-      });
-
-      if (gameStartBtn) {
-        gameStartBtn.addEventListener('click', () => {
-          gameActive = true;
-          gameScore             = 0;
-          gameFirstClickStreak  = 0;
-          gameAttemptsThisRound = 0;
-          setChallengeModeVisuals(gameLevel === 'challenge');
-          updateLevelDisplay();
-          startNewRound('Game started — click the correct element tile!');
-        });
-      }
-
-      if (gameSkipBtn) {
-        gameSkipBtn.addEventListener('click', () => {
-          if (!gameActive) {
-            updateGameHUD('Start the game first.');
-            return;
-          }
-          gameFirstClickStreak = 0;
-          startNewRound('Skipped. New element given.');
-        });
-      }
-
-      if (gameResetScoreBtn) {
-        gameResetScoreBtn.addEventListener('click', () => {
-          setChallengeModeVisuals(false);
-          resetGameState();
-        });
-      }
-
-      // Presentation mode
-      if (presentationToggle && appRoot) {
-        const labelSpan = presentationToggle.querySelector('.presentation-label');
-        presentationToggle.addEventListener('click', () => {
-          const isOn = appRoot.classList.toggle('presentation-mode');
-          if (isOn) {
-            previousThemeForPresentation = root.getAttribute('data-theme') || 'light';
-            setTheme('light');
-            if (labelSpan) labelSpan.textContent = 'Normal mode';
-          } else {
-            if (previousThemeForPresentation) setTheme(previousThemeForPresentation);
-            if (labelSpan) labelSpan.textContent = 'Presentation mode';
-          }
-        });
-      }
     }
 
-    // Load lookup JSON then boot; fall back gracefully if file is missing
-    fetch('periodic-table-lookup.json')
-      .then(r => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then(lookup => {
-        console.log('Lookup loaded:', Object.keys(lookup).length, 'elements');
-        initApp(lookup);
-      })
-      .catch(err => {
-        console.warn('periodic-table-lookup.json not found or invalid:', err.message);
-        console.warn('Running without lookup data — element details will be limited.');
-        initApp(null);
+    if (gameSkipBtn) {
+      gameSkipBtn.addEventListener('click', () => {
+        if (!gameActive) {
+          updateGameHUD('Start the game first.');
+          return;
+        }
+        gameFirstClickStreak = 0;
+        startNewRound('Skipped. New element given.');
       });
-  </script>
+    }
+
+    if (gameResetScoreBtn) gameResetScoreBtn.addEventListener('click', resetGameState);
+
+    if (presentationToggle && appRoot) {
+      const labelSpan = presentationToggle.querySelector('.presentation-label');
+      presentationToggle.addEventListener('click', () => {
+        const isOn = appRoot.classList.toggle('presentation-mode');
+        if (isOn) {
+          previousThemeForPresentation = root.getAttribute('data-theme') || 'light';
+          setTheme('light');
+          if (labelSpan) labelSpan.textContent = 'Normal mode';
+        } else {
+          if (previousThemeForPresentation) setTheme(previousThemeForPresentation);
+          if (labelSpan) labelSpan.textContent = 'Presentation mode';
+        }
+      });
+    }
+
+    renderLastGameScore();
+    renderLeaderboard();
+    resetGameState();
+  }
+
+  function initializeApp() {
+    renderLegend();
+    renderGrid();
+    attachElementClickHandlers();
+    setTheme(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    setGroupModeDisplay(groupMode ? groupMode.value : 'both');
+    setupSharedUIHandlers();
+  }
+
+  fetch('periodic-table-lookup.json')
+    .then(r => r.json())
+    .then(lookup => {
+      attachLookupData(lookup);
+      initializeApp();
+    })
+    .catch(err => {
+      console.error('Failed to load periodic-table-lookup.json', err);
+      initializeApp();
+    });
+</script>
 </body>
 </html>
