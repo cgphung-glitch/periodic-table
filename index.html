@@ -465,6 +465,20 @@
     Ten correct first-click answers in a row earn a 100-point bonus.
   </p>
 
+  <div style="margin:0 0 0.9rem 0;">
+    <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.4rem;">Game level</div>
+    <div id="gameLevelButtons" style="display:flex; flex-wrap:wrap; gap:0.5rem;">
+      <button type="button" class="btn game-level-btn active" data-level="beginner">Beginner</button>
+      <button type="button" class="btn game-level-btn" data-level="intermediate">Intermediate</button>
+      <button type="button" class="btn game-level-btn" data-level="experienced">Experienced</button>
+      <button type="button" class="btn game-level-btn" data-level="advanced">Advanced</button>
+      <button type="button" class="btn game-level-btn" data-level="challenge">Challenge</button>
+    </div>
+    <div id="gameLevelDescription" style="margin-top:0.45rem; font-size: var(--text-sm); color: var(--color-text-muted);">
+      Elements 1–36 only.
+    </div>
+  </div>
+
   <div style="display:flex; flex-wrap:wrap; gap:0.75rem; align-items:center; margin-bottom:0.75rem;">
     <div>
       <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Find this element</div>
@@ -493,6 +507,7 @@
     <label for="gameDurationSelect">
       <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em;">Game duration</div>
       <select id="gameDurationSelect" class="btn">
+        <option value="5" selected>5 minutes</option>
         <option value="10">10 minutes</option>
         <option value="20">20 minutes</option>
         <option value="30">30 minutes</option>
@@ -766,6 +781,19 @@
   const leaderboardTableEl = document.getElementById('leaderboardTable');
   const leaderboardBodyEl = document.getElementById('leaderboardBody');
 
+  const gameLevelButtonsWrap = document.getElementById('gameLevelButtons');
+  const gameLevelDescriptionEl = document.getElementById('gameLevelDescription');
+
+  const GAME_LEVEL_DESCRIPTIONS = {
+    beginner: 'Elements 1–36 only.',
+    intermediate: 'Only elements in groups 1, 2, 13, 14, 15, 16, 17, and 18.',
+    experienced: 'All elements except the inner transition metals.',
+    advanced: 'All elements.',
+    challenge: 'All elements, with tiles showing symbols only.'
+  };
+
+  let gameLevel = 'beginner';  
+
   const NOTES_STORAGE_KEY = 'pt-notes-v1';
   const GAME_LAST_SCORE_KEY = 'pt-game-last-score-v1';
   const GAME_LEADERBOARD_KEY = 'pt-game-leaderboard-v1';
@@ -778,7 +806,7 @@
   let gameAttemptsThisRound = 0;
   let gameFirstClickStreak = 0;
   let gameLastClickWasFirstCorrect = false;
-  let gameDurationMinutes = 10;
+  let gameDurationMinutes = 5;
   let gameTimeRemaining = 0;
   let clickTimeRemaining = CLICK_TIME_LIMIT_SECONDS;
   let gameTimerInterval = null;
@@ -1080,6 +1108,47 @@
     if (gameAttemptsEl) gameAttemptsEl.textContent = `${gameAttemptsThisRound} / 3`;
     if (gameStreakEl) gameStreakEl.textContent = String(gameFirstClickStreak);
     if (gameMessageEl) gameMessageEl.textContent = message;
+  }
+
+  function isInnerTransitionMetal(el) {
+    return el.group === 'lanthanide' || el.group === 'actinide';
+  }
+
+  function getPlayableElementsForLevel(level) {
+    if (level === 'beginner') {
+      return elements.filter(el => el.n >= 1 && el.n <= 36);
+    }
+
+    if (level === 'intermediate') {
+      const allowedGroups = new Set([1, 2, 13, 14, 15, 16, 17, 18]);
+      return elements.filter(el => allowedGroups.has(getGroupNumberFromAtomicNumber(el.n)));
+    }
+
+    if (level === 'experienced') {
+      return elements.filter(el => !isInnerTransitionMetal(el));
+    }
+
+    if (level === 'advanced' || level === 'challenge') {
+      return elements.slice();
+    }
+
+    return elements.slice();
+  }
+
+  function applyGameLevelUI() {
+    if (appRoot) {
+      appRoot.classList.toggle('game-challenge-mode', gameLevel === 'challenge');
+    }
+
+    const buttons = document.querySelectorAll('.game-level-btn');
+    buttons.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.level === gameLevel);
+      btn.setAttribute('aria-pressed', btn.dataset.level === gameLevel ? 'true' : 'false');
+    });
+
+    if (gameLevelDescriptionEl) {
+      gameLevelDescriptionEl.textContent = GAME_LEVEL_DESCRIPTIONS[gameLevel] || '';
+    }
   }
 
   function pickRandomElement() {
@@ -1387,6 +1456,8 @@
   function setupSharedUIHandlers() {
     search.addEventListener('input', filterGrid);
 
+    applyGameLevelUI();
+
     resetBtn.addEventListener('click', () => {
       search.value = '';
       filterGrid();
@@ -1409,12 +1480,26 @@
 
     if (gameStartBtn) {
       gameStartBtn.addEventListener('click', () => {
-        gameDurationMinutes = parseInt(gameDurationSelect?.value || '10', 10);
+        gameDurationMinutes = parseInt(gameDurationSelect?.value || '5', 10);
         gameActive = true;
         gameScore = 0;
         gameFirstClickStreak = 0;
         startGameTimer();
         startNewRound('Game started. Click the correct element.');
+      });
+    }
+
+    if (gameLevelButtonsWrap) {
+      gameLevelButtonsWrap.addEventListener('click', e => {
+        const btn = e.target.closest('.game-level-btn');
+        if (!btn) return;
+
+        gameLevel = btn.dataset.level || 'beginner';
+        applyGameLevelUI();
+
+        if (!gameActive) {
+          updateGameHUD(`Level set to ${btn.textContent}. Press "Start / New game" to begin.`);
+        }
       });
     }
 
