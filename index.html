@@ -1152,7 +1152,7 @@
   }
 
   function pickRandomElement() {
-    const pool = elements.filter(e => e && typeof e.name === 'string');
+    const pool = getPlayableElementsForLevel(gameLevel).filter(e => e && typeof e.name === 'string');
     return pool.length ? pool[Math.floor(Math.random() * pool.length)] : null;
   }
 
