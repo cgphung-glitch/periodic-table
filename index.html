@@ -194,10 +194,10 @@
 
     .group-row {
       display: grid;
-      grid-template-columns: repeat(18, minmax(64px, 1fr));
-      gap: 0.45rem;
+      grid-template-columns: repeat(18, minmax(0, 1fr));
+      gap: clamp(0.12rem, 0.6cqi, 0.45rem);
       margin-bottom: 0.4rem;
-      font-size: 0.7rem;
+      font-size: clamp(0.42rem, 1.7cqi, 0.7rem);
       text-align: center;
       color: var(--color-text-muted);
       position: sticky;
@@ -209,7 +209,7 @@
     }
 
     .group-cell {
-      min-height: 32px;
+      min-height: clamp(18px, 4.5cqi, 32px);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -220,7 +220,7 @@
     }
 
     .group-cell span {
-      font-size: 0.68rem;
+      font-size: clamp(0.32rem, 1.3cqi, 0.68rem);
       opacity: 0.85;
     }
 
@@ -231,14 +231,14 @@
 
     .periodic-grid {
       display: grid;
-      grid-template-columns: repeat(18, minmax(64px, 1fr));
-      gap: 0.45rem;
-      min-width: 1200px;
+      grid-template-columns: repeat(18, minmax(0, 1fr));
+      gap: clamp(0.12rem, 0.6cqi, 0.45rem);
+      width: 100%;
     }
 
     .element {
-      min-height: 88px;
-      padding: 0.45rem;
+      min-height: clamp(28px, 8.5cqi, 88px);
+      padding: clamp(0.08rem, 0.6cqi, 0.45rem);
       border-radius: var(--radius-md);
       border: 1px solid color-mix(in oklab, var(--color-text) 12%, transparent);
       box-shadow: var(--shadow-sm);
@@ -259,10 +259,10 @@
     }
     .element.placeholder > * { visibility: hidden; }
 
-    .number { font-size: 0.78rem; font-weight: 700; opacity: 0.9; }
-    .symbol { font-size: 1.3rem; font-weight: 700; line-height: 1; }
-    .name { font-size: 0.78rem; font-weight: 600; }
-    .mass { font-size: 0.7rem; color: color-mix(in oklab, var(--color-text) 78%, white 22%); }
+    .number { font-size: clamp(0.36rem, 1.4cqi, 0.78rem); font-weight: 700; opacity: 0.9; }
+    .symbol { font-size: clamp(0.5rem, 2.6cqi, 1.3rem); font-weight: 700; line-height: 1; }
+    .name { font-size: clamp(0.32rem, 1.3cqi, 0.78rem); font-weight: 600; }
+    .mass { font-size: clamp(0.3rem, 1.1cqi, 0.7rem); color: color-mix(in oklab, var(--color-text) 78%, white 22%); }
 
     .alkali-metal { background: var(--alkali); }
     .alkaline-earth-metal { background: var(--alkaline); }
@@ -372,61 +372,33 @@
       .search { width: 100%; min-width: 0; }
     }
 
-    /* Mobile: shrink the whole 18-column grid so it fits the device width
-       with no horizontal scrolling required. */
     @media (max-width: 900px) {
       .app { padding: var(--space-4); }
-      .table-wrap { overflow: visible; }
-      .periodic-grid {
-        min-width: 0;
-        gap: 0.2rem;
-        grid-template-columns: repeat(18, minmax(0, 1fr));
-      }
-      .group-row {
-        min-width: 0;
-        gap: 0.2rem;
-        grid-template-columns: repeat(18, minmax(0, 1fr));
-        font-size: 0.55rem;
-      }
-      .group-row .group-cell span { font-size: 0.5rem; }
-      .element {
-        min-height: 46px;
-        padding: 0.15rem;
-        border-radius: 0.3rem;
-      }
-      .number { font-size: 0.5rem; }
-      .symbol { font-size: 0.72rem; }
-      .name { display: none; }
-      .mass { font-size: 0.45rem; }
-      .game-info-tile .game-info-label { font-size: 0.4rem; }
-      .game-info-tile .game-info-value { font-size: 0.6rem; }
-    }
-
-    @media (max-width: 560px) {
-      .element {
-        min-height: 38px;
-        padding: 0.1rem;
-      }
-      .number { font-size: 0.42rem; }
-      .symbol { font-size: 0.62rem; }
-      .mass { display: none; }
-      .group-row { font-size: 0.45rem; }
-      .group-row .group-cell span { display: none; }
-      .game-info-tile .game-info-label { font-size: 0.34rem; }
-      .game-info-tile .game-info-value { font-size: 0.5rem; }
-    }
-
-    @media (max-width: 380px) {
-      .periodic-grid, .group-row { gap: 0.12rem; }
-      .element { min-height: 30px; }
-      .number { display: none; }
-      .symbol { font-size: 0.52rem; }
-    }
-
-    @media (max-width: 900px) {
       .topbar { padding: var(--space-4); }
       .panel { padding: var(--space-4); }
       .search { font-size: var(--text-sm); }
+    }
+
+    /* The table-wrap is a size container: the grid, group-row, and every
+       element tile inside scale continuously (via cqi units above) to
+       whatever width this container actually has - the panel/window - with
+       no fixed breakpoints and no horizontal scrolling required. */
+    .table-wrap {
+      container-type: inline-size;
+      container-name: ptable;
+    }
+
+    /* At smaller container widths, progressively drop the least essential
+       text so the remaining text stays legible instead of shrinking forever. */
+    @container ptable (max-width: 640px) {
+      .name { display: none; }
+    }
+    @container ptable (max-width: 480px) {
+      .mass { display: none; }
+      .group-row .group-cell span { display: none; }
+    }
+    @container ptable (max-width: 340px) {
+      .number { display: none; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -451,8 +423,10 @@
     }
 
     /* Game info tiles: rendered inside the empty (placeholder) blocks of the
-       periodic table grid itself, directly above one another (row 1 / row 2,
-       columns 3-12, which are empty in both rows). */
+       periodic table grid itself. The "Find element" tile sits in row 1;
+       directly below it, a taller stats tile spanning rows 2-3 holds the
+       score, both timers, and the New Game button, all in the same
+       columns (3-12) which are empty in every one of those rows. */
     .element.placeholder.game-info-tile {
       background: color-mix(in oklab, var(--color-primary-highlight) 55%, transparent);
       border-style: solid;
@@ -468,15 +442,58 @@
       text-align: center;
     }
     .game-info-label {
-      font-size: 0.7rem;
+      font-size: clamp(0.34rem, 1.4cqi, 0.7rem);
       text-transform: uppercase;
       letter-spacing: 0.06em;
       color: var(--color-text-muted);
     }
     .game-info-value {
-      font-size: 1.15rem;
+      font-size: clamp(0.5rem, 2.2cqi, 1.15rem);
       font-weight: 700;
       color: var(--color-primary);
+    }
+
+    .game-stats-tile {
+      justify-content: center;
+      padding: clamp(0.2rem, 1cqi, 0.6rem);
+    }
+    .game-stats-tile-inner {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: clamp(0.15rem, 1cqi, 0.6rem);
+      align-items: center;
+    }
+    .game-stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.1rem;
+      min-width: 0;
+    }
+    .game-stat .game-info-label { white-space: nowrap; }
+    .game-newgame-btn {
+      grid-column: span 3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: clamp(20px, 6cqi, 40px);
+      padding: clamp(0.1rem, 0.8cqi, 0.5rem) 0.5rem;
+      font-size: clamp(0.38rem, 1.6cqi, 0.85rem);
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      background: var(--color-primary);
+      color: var(--color-text-inverse);
+      border: 1px solid color-mix(in oklab, var(--color-primary) 70%, black 8%);
+    }
+    .game-newgame-btn:hover { background: var(--color-primary-hover); }
+
+    @container ptable (max-width: 480px) {
+      .game-stats-tile-inner { grid-template-columns: repeat(2, 1fr); }
+      .game-newgame-btn { grid-column: span 2; }
     }
   </style>
 </head>
@@ -975,15 +992,35 @@
         }
         if (row === 2 && col === 3) {
           const tile = document.createElement('article');
-          tile.className = 'element placeholder game-info-tile';
-          tile.id = 'gameScoreTile';
+          tile.className = 'element placeholder game-info-tile game-stats-tile';
+          tile.id = 'gameStatsTile';
           tile.style.gridColumn = 'span 10';
+          tile.style.gridRow = 'span 2';
           tile.setAttribute('aria-live', 'polite');
           tile.innerHTML = `
-            <div class="game-info-label">Score =</div>
-            <div class="game-info-value" id="gameScoreTileValue">0</div>
+            <div class="game-stats-tile-inner">
+              <div class="game-stat">
+                <div class="game-info-label">Score =</div>
+                <div class="game-info-value" id="gameScoreTileValue">0</div>
+              </div>
+              <div class="game-stat">
+                <div class="game-info-label">Time left (game)</div>
+                <div class="game-info-value" id="gameTimeLeftTileValue">—</div>
+              </div>
+              <div class="game-stat">
+                <div class="game-info-label">Time left (click)</div>
+                <div class="game-info-value" id="clickTimeLeftTileValue">30s</div>
+              </div>
+              <button type="button" class="game-newgame-btn" id="gameNewGameTileBtn">New Game</button>
+            </div>
           `;
           grid.appendChild(tile);
+          col += 9;
+          continue;
+        }
+        // Row 3, columns 3-12 are already occupied by the stats tile above
+        // (it spans rows 2-3), so nothing gets rendered here.
+        if (row === 3 && col === 3) {
           col += 9;
           continue;
         }
@@ -1205,6 +1242,11 @@
   function updateTimerDisplays() {
     if (gameTimeLeftEl) gameTimeLeftEl.textContent = gameActive ? formatClock(gameTimeRemaining) : '—';
     if (clickTimeLeftEl) clickTimeLeftEl.textContent = gameActive ? `${clickTimeRemaining}s` : '30s';
+
+    const gameTimeTileValue = document.getElementById('gameTimeLeftTileValue');
+    if (gameTimeTileValue) gameTimeTileValue.textContent = gameActive ? formatClock(gameTimeRemaining) : '—';
+    const clickTimeTileValue = document.getElementById('clickTimeLeftTileValue');
+    if (clickTimeTileValue) clickTimeTileValue.textContent = gameActive ? `${clickTimeRemaining}s` : '30s';
   }
 
   function updateGameHUD(message = '') {
@@ -1588,16 +1630,19 @@
 
     if (groupRow) groupRow.addEventListener('click', handleGroupClick);
 
-    if (gameStartBtn) {
-      gameStartBtn.addEventListener('click', () => {
-        gameDurationMinutes = parseInt(gameDurationSelect?.value || '5', 10);
-        gameActive = true;
-        gameScore = 0;
-        gameFirstClickStreak = 0;
-        startGameTimer();
-        startNewRound('Game started. Click the correct element.');
-      });
+    function startOrRestartGame() {
+      gameDurationMinutes = parseInt(gameDurationSelect?.value || '5', 10);
+      gameActive = true;
+      gameScore = 0;
+      gameFirstClickStreak = 0;
+      startGameTimer();
+      startNewRound('Game started. Click the correct element.');
     }
+
+    if (gameStartBtn) gameStartBtn.addEventListener('click', startOrRestartGame);
+
+    const gameNewGameTileBtn = document.getElementById('gameNewGameTileBtn');
+    if (gameNewGameTileBtn) gameNewGameTileBtn.addEventListener('click', startOrRestartGame);
 
     if (gameLevelButtonsWrap) {
       gameLevelButtonsWrap.addEventListener('click', e => {
