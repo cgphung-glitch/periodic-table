@@ -372,14 +372,58 @@
       .search { width: 100%; min-width: 0; }
     }
 
-    @media (max-width: 768px) {
-      .periodic-grid { min-width: 0; grid-template-columns: repeat(9, minmax(44px, 1fr)); }
-      .group-row { grid-template-columns: repeat(9, minmax(44px, 1fr)); font-size: 0.65rem; }
-      .symbol { font-size: 1.05rem; }
+    /* Mobile: shrink the whole 18-column grid so it fits the device width
+       with no horizontal scrolling required. */
+    @media (max-width: 900px) {
       .app { padding: var(--space-4); }
+      .table-wrap { overflow: visible; }
+      .periodic-grid {
+        min-width: 0;
+        gap: 0.2rem;
+        grid-template-columns: repeat(18, minmax(0, 1fr));
+      }
+      .group-row {
+        min-width: 0;
+        gap: 0.2rem;
+        grid-template-columns: repeat(18, minmax(0, 1fr));
+        font-size: 0.55rem;
+      }
+      .group-row .group-cell span { font-size: 0.5rem; }
+      .element {
+        min-height: 46px;
+        padding: 0.15rem;
+        border-radius: 0.3rem;
+      }
+      .number { font-size: 0.5rem; }
+      .symbol { font-size: 0.72rem; }
+      .name { display: none; }
+      .mass { font-size: 0.45rem; }
+      .game-info-tile .game-info-label { font-size: 0.4rem; }
+      .game-info-tile .game-info-value { font-size: 0.6rem; }
     }
 
-    @media (max-width: 520px) {
+    @media (max-width: 560px) {
+      .element {
+        min-height: 38px;
+        padding: 0.1rem;
+      }
+      .number { font-size: 0.42rem; }
+      .symbol { font-size: 0.62rem; }
+      .mass { display: none; }
+      .group-row { font-size: 0.45rem; }
+      .group-row .group-cell span { display: none; }
+      .game-info-tile .game-info-label { font-size: 0.34rem; }
+      .game-info-tile .game-info-value { font-size: 0.5rem; }
+    }
+
+    @media (max-width: 380px) {
+      .periodic-grid, .group-row { gap: 0.12rem; }
+      .element { min-height: 30px; }
+      .number { display: none; }
+      .symbol { font-size: 0.52rem; }
+    }
+
+    @media (max-width: 900px) {
       .topbar { padding: var(--space-4); }
       .panel { padding: var(--space-4); }
       .search { font-size: var(--text-sm); }
@@ -404,6 +448,35 @@
       clip: rect(0, 0, 0, 0);
       white-space: nowrap;
       border: 0;
+    }
+
+    /* Game info tiles: rendered inside the empty (placeholder) blocks of the
+       periodic table grid itself, directly above one another (row 1 / row 2,
+       columns 3-12, which are empty in both rows). */
+    .element.placeholder.game-info-tile {
+      background: color-mix(in oklab, var(--color-primary-highlight) 55%, transparent);
+      border-style: solid;
+      border-color: color-mix(in oklab, var(--color-primary) 35%, transparent);
+    }
+    .element.placeholder.game-info-tile > * { visibility: visible; }
+    .game-info-tile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.15rem;
+      text-align: center;
+    }
+    .game-info-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-text-muted);
+    }
+    .game-info-value {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--color-primary);
     }
   </style>
 </head>
@@ -882,6 +955,38 @@
     const map = new Map(elements.map(el => [`${el.x}-${el.y}`, el]));
     for (let row = 1; row <= 9; row++) {
       for (let col = 1; col <= 18; col++) {
+        // Columns 3-12 are empty in both row 1 and row 2 (the gap left by the
+        // missing d-block in periods 1-2), and row 2's gap sits directly
+        // beneath row 1's, so we merge each into one wide tile and use them
+        // to surface the live game state right inside the table.
+        if (row === 1 && col === 3) {
+          const tile = document.createElement('article');
+          tile.className = 'element placeholder game-info-tile';
+          tile.id = 'gameTargetTile';
+          tile.style.gridColumn = 'span 10';
+          tile.setAttribute('aria-live', 'polite');
+          tile.innerHTML = `
+            <div class="game-info-label">Find element:</div>
+            <div class="game-info-value" id="gameTargetTileValue">—</div>
+          `;
+          grid.appendChild(tile);
+          col += 9;
+          continue;
+        }
+        if (row === 2 && col === 3) {
+          const tile = document.createElement('article');
+          tile.className = 'element placeholder game-info-tile';
+          tile.id = 'gameScoreTile';
+          tile.style.gridColumn = 'span 10';
+          tile.setAttribute('aria-live', 'polite');
+          tile.innerHTML = `
+            <div class="game-info-label">Score =</div>
+            <div class="game-info-value" id="gameScoreTileValue">0</div>
+          `;
+          grid.appendChild(tile);
+          col += 9;
+          continue;
+        }
         const el = map.get(`${col}-${row}`);
         const cell = document.createElement('article');
         if (!el) {
@@ -1108,6 +1213,11 @@
     if (gameAttemptsEl) gameAttemptsEl.textContent = `${gameAttemptsThisRound} / 3`;
     if (gameStreakEl) gameStreakEl.textContent = String(gameFirstClickStreak);
     if (gameMessageEl) gameMessageEl.textContent = message;
+
+    const targetTileValue = document.getElementById('gameTargetTileValue');
+    if (targetTileValue) targetTileValue.textContent = gameTargetElement ? gameTargetElement.name : '—';
+    const scoreTileValue = document.getElementById('gameScoreTileValue');
+    if (scoreTileValue) scoreTileValue.textContent = String(gameScore);
   }
 
   function isInnerTransitionMetal(el) {
